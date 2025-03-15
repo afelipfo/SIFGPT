@@ -1,0 +1,5 @@
+Estimado {nombre}, hoy {fecha} te informamos que:
+
+El estado de tu trámite es:
+
+{estado_radicado}

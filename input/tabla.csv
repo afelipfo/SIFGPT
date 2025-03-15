@@ -1,0 +1,51 @@
+numero_radicado;nombre;fecha_radicacion;texto_pqrs;clasificacion;estado_pqrs
+PQRS-20230816-0001;Carlos Martínez Pérez;2024-08-16;Solicito información sobre el estado de mi solicitud de subsidio.;solicitud;En proceso
+PQRS-20230815-0002;María López Rodríguez;2024-08-15;Me quejo por la falta de atención en la oficina de servicios.;queja;Resuelta
+PQRS-20230814-0003;Luis Gómez Sánchez;2024-08-14;Reclamo por el cobro indebido en mi factura de agua.;reclamo;En revisión
+PQRS-20230813-0004;Ana Ruiz Fernández;2024-08-13;Solicito el cambio de horario en la recolección de basura.;solicitud;Pendiente
+PQRS-20230812-0005;Jorge Ramírez López;2024-08-12;Petición para la instalación de un semáforo en la avenida principal.;petición;En proceso
+PQRS-20230811-0006;Carmen Díaz Rivera;2024-08-11;Queja por el ruido constante en la zona residencial.;queja;En revisión
+PQRS-20230810-0007;Fernando Torres Gómez;2024-08-10;Reclamo por la falta de respuesta a mi solicitud anterior.;reclamo;Resuelta
+PQRS-20230809-0008;Gloria Jiménez Morales;2024-08-09;Solicito la reparación de la calle 5 en el barrio San José.;solicitud;En proceso
+PQRS-20230808-0009;Ricardo Herrera Castro;2024-08-08;Queja por la demora en la entrega de documentos en la oficina municipal.;queja;Pendiente
+PQRS-20230807-0010;Patricia Salazar Mendoza;2024-08-07;Reclamo por la interrupción del servicio de energía sin previo aviso.;reclamo;En revisión
+PQRS-20230806-0011;Miguel Pérez Torres;2024-08-06;Solicito una copia de mi historial de pagos de impuestos.;solicitud;Resuelta
+PQRS-20230805-0012;Laura Gómez Márquez;2024-08-05;Queja por la falta de alumbrado público en la calle 12.;queja;En proceso
+PQRS-20230804-0013;Santiago Ortiz Ruiz;2024-08-04;Reclamo por la mala calidad del agua potable en mi zona.;reclamo;En revisión
+PQRS-20230803-0014;Valentina Sánchez López;2024-08-03;Solicito información sobre el proceso de inscripción para el programa de viviendas.;solicitud;En proceso
+PQRS-20230802-0015;Juan José Morales Ramírez;2024-08-02;Queja por la atención recibida en la oficina de atención al ciudadano.;queja;Pendiente
+PQRS-20230801-0016;Camila Ramírez González;2024-08-01;Reclamo por el mal estado de las aceras en mi barrio.;reclamo;En proceso
+PQRS-20230731-0017;Daniela Martínez López;2024-07-31;Solicito la expedición de un duplicado de mi licencia de conducción.;solicitud;Resuelta
+PQRS-20230730-0018;Alejandro Fernández Díaz;2024-07-30;Petición para la creación de un parque en la zona sur.;petición;En revisión
+PQRS-20230729-0019;Isabel Ruiz Gómez;2024-07-29;Queja por la mala calidad del servicio de internet en mi sector.;queja;Pendiente
+PQRS-20230728-0020;Francisco Rodríguez Jiménez;2024-07-28;Reclamo por la facturación incorrecta de mi servicio de gas.;reclamo;Resuelta
+PQRS-20230727-0021;Mónica Gómez Ramírez;2024-07-27;Solicito una cita para la renovación de mi cédula de ciudadanía.;solicitud;En proceso
+PQRS-20230726-0022;José Torres González;2024-07-26;Queja por la falta de respuesta a mi solicitud de crédito.;queja;Pendiente
+PQRS-20230725-0023;Lucía Díaz Morales;2024-07-25;Reclamo por el mal estado de los parques en mi barrio.;reclamo;En proceso
+PQRS-20230724-0024;David Ramírez Jiménez;2024-07-24;Solicito información sobre el proceso de adopción de mascotas.;solicitud;Resuelta
+PQRS-20230723-0025;Marta Fernández Sánchez;2024-07-23;Petición para la instalación de más contenedores de basura en mi sector.;petición;En revisión
+PQRS-20230722-0026;Diego Morales Ruiz;2024-07-22;Queja por el trato recibido en el centro de salud.;queja;Pendiente
+PQRS-20230721-0027;Paula Jiménez Torres;2024-07-21;Reclamo por la demora en la entrega de mi tarjeta de identidad.;reclamo;Resuelta
+PQRS-20230720-0028;Andrés Gómez Rodríguez;2024-07-20;Solicito la ampliación de la vía principal en mi barrio.;solicitud;En proceso
+PQRS-20230719-0029;Laura Sánchez Márquez;2024-07-19;Queja por el estado del servicio de transporte público en mi zona.;queja;Pendiente
+PQRS-20230718-0030;Gabriel Torres Morales;2024-07-18;Reclamo por la falta de mantenimiento en los parques públicos.;reclamo;En revisión
+PQRS-20230717-0031;María Fernández Ramírez;2024-07-17;Solicito la expedición de un certificado de residencia.;solicitud;Resuelta
+PQRS-20230716-0032;Jorge Ruiz Gómez;2024-07-16;Petición para la creación de un paso peatonal en la avenida principal.;petición;En proceso
+PQRS-20230715-0033;Alejandra Ramírez Torres;2024-07-15;Queja por el estado de las vías en mi sector.;queja;Pendiente
+PQRS-20230714-0034;Sofía González Márquez;2024-07-14;Reclamo por la falta de señalización en las calles.;reclamo;En revisión
+PQRS-20230713-0035;Manuel Fernández López;2024-07-13;Solicito una copia de mi historia clínica.;solicitud;Resuelta
+PQRS-20230712-0036;Elena Morales Ramírez;2024-07-12;Queja por la falta de atención en el hospital municipal.;queja;En proceso
+PQRS-20230711-0037;Carlos Jiménez Ruiz;2024-07-11;Reclamo por el mal servicio de telefonía en mi sector.;reclamo;Pendiente
+PQRS-20230710-0038;Patricia Gómez Fernández;2024-07-10;Solicito una copia de mi expediente académico.;solicitud;Resuelta
+PQRS-20230709-0039;Juan Torres Jiménez;2024-07-09;Petición para la construcción de una biblioteca en mi barrio.;petición;En revisión
+PQRS-20230708-0040;Laura Fernández Ramírez;2024-07-08;Queja por el estado del alumbrado público en la calle principal.;queja;Pendiente
+PQRS-20230707-0041;Santiago Ruiz Gómez;2024-07-07;Reclamo por la interrupción constante del servicio de agua.;reclamo;En proceso
+PQRS-20230706-0042;Daniela Márquez Torres;2024-07-06;Solicito una copia de mi acta de nacimiento.;solicitud;Resuelta
+PQRS-20230705-0043;Luis Jiménez Fernández;2024-07-05;Petición para la mejora de la seguridad en mi barrio.;petición;En revisión
+PQRS-20230704-0044;Carolina Torres Jiménez;2024-07-04;Queja por el ruido en la construcción cercana a mi domicilio.;queja;Pendiente
+PQRS-20230703-0045;Miguel Ramírez Ruiz;2024-07-03;Reclamo por la falta de acceso a internet en mi zona.;reclamo;En proceso
+PQRS-20230702-0046;Sofía Fernández González;2024-07-02;Solicito información sobre el estado de mi trámite de pensión.;solicitud;Resuelta
+PQRS-20230701-0047;Javier Torres Ruiz;2024-07-01;Petición para la instalación de cámaras de seguridad en mi sector.;petición;En revisión
+PQRS-20230630-0048;Lucía Ramírez Jiménez;2024-06-30;Queja por la atención deficiente en la oficina de pasaportes.;queja;Pendiente
+PQRS-20230629-0049;Gabriel Fernández Torres;2024-06-29;Reclamo por la facturación incorrecta de mi servicio de acueducto.;reclamo;En revisión
+PQRS-20230628-0050;María Ruiz Gómez;2024-06-28;Solicito una cita para la expedición de mi pasaporte.;solicitud;Resuelta

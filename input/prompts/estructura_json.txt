@@ -1,0 +1,8 @@
+[{"nombre": "El nombre de la persona que hace la PQRSD",
+"telefono": "El teléfono de la persona que hace la PQRSD",
+"cedula": "Cédula o identificación de la persona que hace la PQRSD",
+"clase": "Clasificación de la PQRSD",
+"explicacion": "Explicación de la elección hecha",
+"radicado": "Número de radicado que puede estar presente en la PQRSD", 
+"entidad_responde": "Entidad que debería de responder la PQRS"},
+"es_faq": "Sí/No es una pregunta frecuente"}]
