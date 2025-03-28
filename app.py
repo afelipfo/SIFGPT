@@ -13,11 +13,11 @@ app = Flask(__name__)
 CORS(app)
 
 # Inicializamos el procesador de PQRS con la clave API necesaria
-# Cargar las variables del archivo .env
+# Cargar variables del archivo .env
 load_dotenv()
 
-# Leer la llave de la API
-api_key = os.getenv('openai_api_key')
+# Obtener la API key desde el archivo .env
+api_key = os.getenv('OPENAI_API_KEY')
 
 pqrs_proc = PQRSProcessor(base_url=None, openai_api_key=api_key, whisper_model='whisper-1')
 audio_path = 'input/audios'
