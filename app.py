@@ -2,62 +2,145 @@ from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 import sys
-import io
 import os
+from pathlib import Path
 
+# Agregar src al path
 sys.path.append('src/')
 
-from PQRS import PQRSProcessor
+from src.config.config import config
+from src.utils.logger import logger
+from src.services.pqrs_orchestrator_service import PQRSOrchestratorService
+from src.controllers.pqrs_controller import PQRSController, HealthController
 
-app = Flask(__name__)
-CORS(app)
-
-# Inicializamos el procesador de PQRS con la clave API necesaria
-# Cargar variables del archivo .env
+# Cargar variables de entorno
 load_dotenv()
 
-# Obtener la API key desde el archivo .env
-api_key = os.getenv('OPENAI_API_KEY')
+def create_app():
+    """Factory function para crear la aplicación Flask"""
+    app = Flask(__name__)
+    CORS(app)
+    
+    # Configuración de la aplicación
+    app.config['SECRET_KEY'] = config.SECRET_KEY
+    app.config['DEBUG'] = config.DEBUG
+    
+    # Validar configuración
+    try:
+        config.validate_config()
+        logger.info("Configuración validada exitosamente")
+    except Exception as e:
+        logger.error(f"Error en configuración: {e}")
+        raise
+    
+    # Inicializar servicios
+    try:
+        openai_api_key = os.getenv('OPENAI_API_KEY')
+        if not openai_api_key:
+            raise ValueError("OPENAI_API_KEY no está configurada")
+        
+        orchestrator_service = PQRSOrchestratorService(openai_api_key)
+        logger.info("Servicios inicializados exitosamente")
+        
+    except Exception as e:
+        logger.error(f"Error al inicializar servicios: {e}")
+        raise
+    
+    # Inicializar controladores
+    pqrs_controller = PQRSController(orchestrator_service)
+    health_controller = HealthController(orchestrator_service)
+    
+    # Configurar rutas
+    @app.route('/')
+    def home():
+        """Página principal"""
+        return render_template('index.html')
+    
+    @app.route('/get_response', methods=['POST'])
+    def get_response():
+        """Endpoint para obtener respuesta a texto"""
+        return pqrs_controller.get_response()
+    
+    @app.route('/process_audio', methods=['POST'])
+    def process_audio():
+        """Endpoint para procesar audio completo"""
+        return pqrs_controller.process_audio()
+    
+    @app.route('/transcribe_audio', methods=['POST'])
+    def transcribe_audio():
+        """Endpoint para solo transcribir audio"""
+        return pqrs_controller.transcribe_audio_only()
+    
+    @app.route('/system/status', methods=['GET'])
+    def system_status():
+        """Endpoint para obtener estado del sistema"""
+        return pqrs_controller.get_system_status()
+    
+    @app.route('/system/refresh', methods=['POST'])
+    def refresh_caches():
+        """Endpoint para refrescar cachés"""
+        return pqrs_controller.refresh_caches()
+    
+    @app.route('/system/validate', methods=['GET'])
+    def validate_system():
+        """Endpoint para validar el sistema"""
+        return pqrs_controller.validate_system()
+    
+    @app.route('/health', methods=['GET'])
+    def health_check():
+        """Endpoint básico de salud"""
+        return health_controller.health_check()
+    
+    @app.route('/health/detailed', methods=['GET'])
+    def detailed_health_check():
+        """Endpoint detallado de salud"""
+        return health_controller.detailed_health_check()
+    
+    # Manejador de errores global
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        """Maneja excepciones no capturadas"""
+        logger.error(f"Excepción no capturada: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor",
+            "message": str(e) if config.DEBUG else "Ha ocurrido un error inesperado"
+        }), 500
+    
+    # Manejador de errores 404
+    @app.errorhandler(404)
+    def not_found(e):
+        """Maneja rutas no encontradas"""
+        logger.warning(f"Ruta no encontrada: {request.path}")
+        return jsonify({
+            "success": False,
+            "error": "Ruta no encontrada",
+            "path": request.path
+        }), 404
+    
+    # Manejador de errores 405
+    @app.errorhandler(405)
+    def method_not_allowed(e):
+        """Maneja métodos HTTP no permitidos"""
+        logger.warning(f"Método no permitido: {request.method} en {request.path}")
+        return jsonify({
+            "success": False,
+            "error": "Método no permitido",
+            "method": request.method,
+            "path": request.path
+        }), 405
+    
+    logger.info("Aplicación Flask configurada exitosamente")
+    return app
 
-pqrs_proc = PQRSProcessor(base_url=None, openai_api_key=api_key, whisper_model='whisper-1')
-audio_path = 'input/audios'
+# Crear aplicación
+app = create_app()
 
-#TODO
-# - Cambiar lectura de audio para que lea directamente de la caché (no desde el directorio)
-# - Eliminar scroll horizontal en el bloque de chat
-
-@app.route('/')
-def home():
-    return render_template('index.html')
-
-@app.route('/get_response', methods=['POST'])
-def get_response():
-    user_input = request.json.get('message')
-    response = pqrs_proc.model_answer(user_input, test=False)
-    return jsonify({'response': response})
-
-@app.route('/process_audio', methods=['POST'])
-def endpoint_transcribe():
-   if 'audio' not in request.files:
-      return jsonify({"error": "No audio file provided"}), 400
-      
-   audio_file = request.files['audio']
-   try:
-      # save a temporary instance of the file to satisfy the API
-      audio_file.seek(0)
-      temp_path = "./temp_audio.webm"
-      audio_file.save(temp_path)
-      with open(temp_path, "rb") as file:
-         pqrs_proc.transcribe_audio_openai(file)
-      # clean up
-      os.remove(temp_path)
-      return jsonify({'transcript': pqrs_proc.transcription}) 
-
-   
-   except Exception as e:
-      print(e)
-      return jsonify({"error": str(e)}), 500
-   
 if __name__ == '__main__':
-    app.run(debug=True)
-    print("running up...")
+    try:
+        logger.info("Iniciando aplicación TUNRAG...")
+        app.run(debug=config.DEBUG, host='0.0.0.0', port=5000)
+        logger.info("Aplicación iniciada exitosamente en puerto 5000")
+    except Exception as e:
+        logger.error(f"Error al iniciar aplicación: {e}")
+        sys.exit(1)
