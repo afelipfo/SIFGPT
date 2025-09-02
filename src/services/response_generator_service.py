@@ -133,7 +133,7 @@ class ResponseGeneratorService:
                 nombre=pqrs_data.nombre,
                 fecha=fecha,
                 clase=pqrs_data.clase,
-                estado_radicado=historico.to_dict()
+                estado_radicado=f"Radicado: {historico.numero_radicado} - Estado: {historico.estado_pqrs}"
             )
             
             # Formatear prompt de solución
