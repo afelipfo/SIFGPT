@@ -37,7 +37,7 @@ TUNRAG/
 │   └── plantillas_solucion/     # Plantillas de respuestas
 ├── logs/                        # Archivos de log
 ├── app.py                       # Aplicación principal Flask
-├── test_unified.py              # Pruebas unificadas del sistema
+
 └── requirements.txt              # Dependencias de Python
 ```
 
@@ -102,13 +102,13 @@ TUNRAG/
 
 ## 🧪 Pruebas
 
-Ejecutar el sistema de pruebas unificado:
+Verificar el estado del sistema:
 
 ```bash
-python test_unified.py
+curl http://localhost:5000/api/health
 ```
 
-Este comando ejecuta todas las pruebas del sistema de manera consolidada.
+Este comando verifica que todos los servicios estén funcionando correctamente.
 
 ## 🚀 Despliegue
 
