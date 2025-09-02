@@ -28,7 +28,6 @@ class Config:
     PLANTILLAS_DIR = INPUT_DIR / 'plantillas_solucion'
     
     # Configuración de archivos
-    HISTORICO_CSV = HISTORICO_DIR / 'historico.csv'
     HISTORICO_EXCEL = HISTORICO_DIR / 'historico2.xlsx'
     
     # Configuración de prompts

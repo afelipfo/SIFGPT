@@ -43,9 +43,10 @@ SIFGPT/
 │   ├── js/sifgpt-unified.js          # JavaScript unificado (sin duplicados)
 │   └── images/logo-medellin.png       # Logo oficial
 ├── input/                        # Datos de entrada (solo utilizados)
+│   ├── audios/                        # Directorio para procesamiento temporal de audio
+│   │   └── .gitkeep                   # Mantiene la carpeta en el repositorio
 │   ├── historico/                     # Archivos de histórico activos
-│   │   ├── historico.csv              # Histórico en formato CSV
-│   │   └── historico2.xlsx            # Histórico en formato Excel
+│   │   └── historico2.xlsx            # Histórico principal en formato Excel
 │   ├── prompts/                       # Prompts de IA (solo utilizados)
 │   │   ├── categorias.txt, entidades.txt, estructura_json.txt
 │   │   ├── faqs.txt, respuestas_faqs.txt

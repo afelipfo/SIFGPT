@@ -10,27 +10,22 @@ class PQRSRepository:
     
     def __init__(self):
         """Inicializa el repositorio"""
-        self.historico_csv_path = config.HISTORICO_CSV
         self.historico_excel_path = config.HISTORICO_EXCEL
         self._historico_df = None
         self._historico_source = None
     
     def _load_historico(self) -> pd.DataFrame:
-        """Carga el archivo histórico en memoria, priorizando Excel sobre CSV"""
+        """Carga el archivo histórico en memoria desde Excel"""
         if self._historico_df is None:
             try:
-                # Intentar cargar Excel primero
+                # Cargar archivo Excel
                 if self.historico_excel_path.exists():
                     self._historico_df = pd.read_excel(self.historico_excel_path)
                     self._historico_source = 'excel'
                     logger.info(f"Archivo histórico Excel cargado: {len(self._historico_df)} registros")
-                elif self.historico_csv_path.exists():
-                    self._historico_df = pd.read_csv(self.historico_csv_path, sep=";")
-                    self._historico_source = 'csv'
-                    logger.info(f"Archivo histórico CSV cargado: {len(self._historico_df)} registros")
                 else:
-                    logger.error("No se encontró ningún archivo histórico")
-                    raise FileNotFoundError("No se encontró archivo histórico")
+                    logger.error("No se encontró archivo histórico Excel")
+                    raise FileNotFoundError("No se encontró archivo histórico Excel")
                 
                 # Normalizar nombres de columnas
                 self._normalize_columns()

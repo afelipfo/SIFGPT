@@ -25,8 +25,8 @@ const API_ENDPOINTS = {
         buscarNombre: '/api/historico/buscar/nombre'
     },
     advancedHistorico: {
-        consultaAvanzada: '/api/advanced-historico/consulta-avanzada',
-        sugerencias: '/api/advanced-historico/sugerencias'
+        consultaAvanzada: '/api/historico/consulta-avanzada',
+        sugerencias: '/api/historico/sugerencias'
     },
     test: {
         historico: '/test/historico',

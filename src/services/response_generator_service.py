@@ -124,7 +124,7 @@ class ResponseGeneratorService:
                 return self._generate_new_pqrs_response(pqrs_data, fecha)
             
             # Obtener plantilla para PQRS histórica
-            plantilla_hist = self.prompt_repository.get_plantilla('plantilla_hist')
+            plantilla_hist = self.prompt_repository.get_plantilla('plantilla')
             sys_prompt_solucion = self.prompt_repository.get_prompt('sys_prompt_solucion')
             faqs = self.prompt_repository.get_prompt('faqs')
             
