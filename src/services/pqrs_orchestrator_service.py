@@ -6,6 +6,7 @@ from src.models.pqrs_model import PQRSData, AudioTranscription
 from src.services.audio_service import AudioService, AudioServiceFactory
 from src.services.pqrs_classifier_service import PQRSClassifierService
 from src.services.response_generator_service import ResponseGeneratorService
+from src.services.historico_query_service import HistoricoQueryService
 from src.repositories.pqrs_repository import PQRSRepository, PromptRepository
 
 class PQRSOrchestratorService:
@@ -41,6 +42,7 @@ class PQRSOrchestratorService:
                 self.prompt_repository, 
                 self.pqrs_repository
             )
+            self.historico_service = HistoricoQueryService(self.pqrs_repository)
             
             logger.info("Orquestador de PQRS inicializado exitosamente")
             
@@ -238,3 +240,49 @@ class PQRSOrchestratorService:
         except Exception as e:
             logger.error(f"Error en validación del sistema: {e}")
             return False
+    
+    def consultar_historico(self, consulta: str, tipo_consulta: str = 'inteligente') -> Dict[str, Any]:
+        """Realiza consultas al histórico de PQRS"""
+        try:
+            logger.info(f"Iniciando consulta histórica de tipo: {tipo_consulta}")
+            
+            if tipo_consulta == 'por_radicado':
+                resultado = self.historico_service.consultar_por_radicado(consulta)
+            elif tipo_consulta == 'por_texto':
+                resultado = self.historico_service.buscar_por_texto(consulta)
+            elif tipo_consulta == 'por_nombre':
+                resultado = self.historico_service.buscar_por_nombre(consulta)
+            elif tipo_consulta == 'estadisticas':
+                resultado = self.historico_service.consultar_estadisticas()
+            elif tipo_consulta == 'ayuda':
+                resultado = self.historico_service.obtener_ayuda_consultas()
+            else:
+                # Consulta inteligente por defecto
+                resultado = self.historico_service.consulta_inteligente(consulta)
+            
+            logger.info(f"Consulta histórica completada: {resultado.get('tipo_consulta', 'desconocido')}")
+            return resultado
+            
+        except Exception as e:
+            logger.error(f"Error en consulta histórica: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "mensaje": "Error al realizar la consulta histórica"
+            }
+    
+    def obtener_resumen_historico(self) -> Dict[str, Any]:
+        """Obtiene un resumen general del histórico"""
+        try:
+            logger.info("Obteniendo resumen del histórico")
+            resultado = self.historico_service.consultar_estadisticas()
+            logger.info("Resumen del histórico obtenido exitosamente")
+            return resultado
+            
+        except Exception as e:
+            logger.error(f"Error al obtener resumen del histórico: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "mensaje": "Error al obtener resumen del histórico"
+            }

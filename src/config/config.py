@@ -29,6 +29,7 @@ class Config:
     
     # Configuración de archivos
     HISTORICO_CSV = HISTORICO_DIR / 'historico.csv'
+    HISTORICO_EXCEL = HISTORICO_DIR / 'historico2.xlsx'
     TABLA_CSV = INPUT_DIR / 'tabla.csv'
     
     # Configuración de prompts

@@ -12,6 +12,7 @@ from src.config.config import config
 from src.utils.logger import logger
 from src.services.pqrs_orchestrator_service import PQRSOrchestratorService
 from src.controllers.pqrs_controller import PQRSController, HealthController
+from src.controllers.historico_controller import historico_bp
 
 # Cargar variables de entorno
 load_dotenv()
@@ -50,6 +51,9 @@ def create_app():
     # Inicializar controladores
     pqrs_controller = PQRSController(orchestrator_service)
     health_controller = HealthController(orchestrator_service)
+    
+    # Registrar blueprints
+    app.register_blueprint(historico_bp, url_prefix='/api/historico')
     
     # Configurar rutas
     @app.route('/')
@@ -96,6 +100,25 @@ def create_app():
     def detailed_health_check():
         """Endpoint detallado de salud"""
         return health_controller.detailed_health_check()
+    
+    @app.route('/test/historico', methods=['GET'])
+    def test_historico():
+        """Endpoint de prueba para verificar el histórico"""
+        try:
+            # Obtener resumen del histórico
+            resumen = orchestrator_service.obtener_resumen_historico()
+            return jsonify({
+                "success": True,
+                "mensaje": "Prueba del histórico completada",
+                "resumen": resumen
+            })
+        except Exception as e:
+            logger.error(f"Error en prueba del histórico: {e}")
+            return jsonify({
+                "success": False,
+                "error": str(e),
+                "mensaje": "Error al probar el histórico"
+            }), 500
     
     # Manejador de errores global
     @app.errorhandler(Exception)
