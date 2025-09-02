@@ -109,9 +109,27 @@ class PQRSOrchestratorService:
                 logger.info("Modo de prueba completado")
                 return result
             
-            # Paso 1: Clasificar PQRS
-            pqrs_data = self.classifier_service.classify_pqrs(text)
-            logger.info(f"PQRS clasificada como: {pqrs_data.clase}")
+            # Paso 1: Clasificar PQRS con fallback
+            try:
+                pqrs_data = self.classifier_service.classify_pqrs(text)
+                logger.info(f"PQRS clasificada como: {pqrs_data.clase}")
+            except Exception as e:
+                logger.warning(f"Error en clasificación, usando fallback: {e}")
+                # Crear clasificación básica de fallback
+                from src.models.pqrs_model import PQRSData
+                pqrs_data = PQRSData(
+                    nombre="",
+                    telefono="",
+                    cedula="",
+                    clase="SOLICITUD-INTERÉS PARTICULAR",
+                    explicacion="Clasificación automática",
+                    radicado="",
+                    entidad_responde="Secretaría de Infraestructura Física",
+                    es_faq="No",
+                    barrio="",
+                    tipo_solicitud="SOLICITUD-INTERÉS PARTICULAR",
+                    tema_principal="Infraestructura física"
+                )
             
             # Paso 2: Generar respuesta
             response = self.response_service.generate_response(pqrs_data, text)

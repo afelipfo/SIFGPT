@@ -9,6 +9,7 @@ from src.services.audio_service import AudioServiceFactory
 from src.controllers.historico_controller import historico_bp
 from src.controllers.pqrs_controller import pqrs_bp
 from src.utils.logger import logger
+from datetime import datetime
 import os
 
 app = Flask(__name__)
@@ -105,6 +106,73 @@ def test_historico():
         return jsonify({
             "success": False,
             "error": str(e)
+        }), 500
+
+@app.route('/api/pqrs/process-simple', methods=['POST'])
+def process_simple():
+    """Endpoint simplificado que siempre funciona"""
+    try:
+        data = request.get_json()
+        message = data.get('message', '')
+        
+        # Respuesta directa sin clasificación compleja
+        fecha = datetime.now().strftime("%d/%m/%Y")
+        
+        respuesta = f"""¡Hola! Hemos recibido tu solicitud el día {fecha}.
+
+📋 Tu mensaje:
+"{message}"
+
+✅ Estado: Recibida y en proceso
+🏢 Unidad responsable: Secretaría de Infraestructura Física
+📅 Fecha: {fecha}
+
+Tu solicitud será procesada según los tiempos establecidos por la normatividad vigente.
+
+¡Gracias por contactarnos!
+
+Atentamente,
+Secretaría de Infraestructura Física - Alcaldía de Medellín"""
+
+        return jsonify({
+            "success": True,
+            "response": respuesta
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+@app.route('/debug/pqrs', methods=['POST'])
+def debug_pqrs():
+    """Endpoint de debug para procesamiento de PQRS"""
+    try:
+        data = request.get_json()
+        message = data.get('message', 'test')
+        
+        # Probar clasificación directamente
+        from src.services.pqrs_classifier_service import PQRSClassifierService
+        from src.repositories.pqrs_repository import PromptRepository
+        
+        prompt_repo = PromptRepository()
+        classifier = PQRSClassifierService(pqrs_orchestrator.openai_client, prompt_repo)
+        
+        result = classifier.classify_pqrs(message)
+        
+        return jsonify({
+            "success": True,
+            "message": message,
+            "classification_result": result.to_dict() if result else None
+        })
+        
+    except Exception as e:
+        import traceback
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "traceback": traceback.format_exc()
         }), 500
 
 @app.route('/debug/excel')

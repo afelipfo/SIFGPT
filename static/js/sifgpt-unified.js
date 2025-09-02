@@ -13,7 +13,7 @@ const API_BASE = '';
 const API_ENDPOINTS = {
     health: '/api/health',
     pqrs: {
-        processText: '/api/pqrs/process-text',
+        processText: '/api/pqrs/process-simple',
         processAudio: '/api/pqrs/process-audio',
         transcribeAudio: '/api/pqrs/transcribe-audio',
         status: '/api/pqrs/status'

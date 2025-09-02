@@ -87,9 +87,9 @@ class PQRSClassifierService:
             # Parsear JSON
             json_data = json.loads(cleaned_response)
             
-            # Validar estructura del JSON
-            required_fields = ['nombre', 'telefono', 'cedula', 'clase', 'explicacion', 'radicado', 'entidad_responde', 'es_faq']
-            for field in required_fields:
+            # Validar estructura del JSON con todos los campos del modelo
+            all_fields = ['nombre', 'telefono', 'cedula', 'clase', 'explicacion', 'radicado', 'entidad_responde', 'es_faq', 'barrio', 'tipo_solicitud', 'tema_principal']
+            for field in all_fields:
                 if field not in json_data:
                     json_data[field] = ""
             
