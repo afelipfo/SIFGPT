@@ -88,11 +88,14 @@ class PQRSRepository:
                 'LÍDER': 'lider'
             }
             
-            # Renombrar columnas si es necesario
+            # Renombrar columnas preservando datos
             for old_name, new_name in column_mapping.items():
-                if old_name in self._historico_df.columns and new_name not in self._historico_df.columns:
-                    self._historico_df = self._historico_df.rename(columns={old_name: new_name})
-                    logger.info(f"Columna renombrada: {old_name} -> {new_name}")
+                if old_name in self._historico_df.columns:
+                    if new_name not in self._historico_df.columns:
+                        self._historico_df[new_name] = self._historico_df[old_name]
+                        logger.info(f"Columna mapeada: {old_name} -> {new_name}")
+                    # Mantener columna original también por compatibilidad
+                    # self._historico_df = self._historico_df.rename(columns={old_name: new_name})
             
             # Crear columna nombre combinada si no existe
             if 'nombre_completo' not in self._historico_df.columns:
@@ -102,6 +105,19 @@ class PQRSRepository:
                         self._historico_df['primer_apellido'].fillna('')
                     ).str.strip()
                     logger.info("Columna nombre_completo creada combinando campos de nombre")
+            
+            # Crear columna nombre principal para compatibilidad
+            if 'nombre' not in self._historico_df.columns:
+                if 'nombre_completo' in self._historico_df.columns:
+                    self._historico_df['nombre'] = self._historico_df['nombre_completo']
+                elif all(col in self._historico_df.columns for col in ['primer_nombre', 'primer_apellido']):
+                    self._historico_df['nombre'] = (
+                        self._historico_df['primer_nombre'].fillna('') + ' ' + 
+                        self._historico_df['primer_apellido'].fillna('')
+                    ).str.strip()
+                else:
+                    self._historico_df['nombre'] = ''
+                logger.info("Columna nombre creada para compatibilidad")
             
             # Verificar columnas requeridas mínimas
             required_columns = ['numero_radicado', 'texto_pqrs', 'estado_pqrs']
@@ -134,7 +150,8 @@ class PQRSRepository:
                 logger.error("Columna 'numero_radicado' no encontrada en el archivo histórico")
                 return None
             
-            result = df[df['numero_radicado'] == numero_radicado]
+            # Convertir radicado a string para comparación
+            result = df[df['numero_radicado'].astype(str) == str(numero_radicado)]
             if result.empty:
                 logger.warning(f"No se encontró registro con radicado: {numero_radicado}")
                 return None

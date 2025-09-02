@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 from datetime import datetime
 from enum import Enum
+import pandas as pd
 
 class PQRSClase(Enum):
     """Enumeración de clases de PQRS"""
@@ -72,7 +73,17 @@ class PQRSData:
     @classmethod
     def from_dict(cls, data: dict) -> 'PQRSData':
         """Crea una instancia desde un diccionario"""
-        return cls(**data)
+        # Filtrar solo los campos que existen en el modelo
+        valid_fields = {}
+        for field_name in cls.__dataclass_fields__:
+            if field_name in data:
+                valid_fields[field_name] = data[field_name]
+            else:
+                # Valores por defecto para campos nuevos
+                if field_name in ['barrio', 'tipo_solicitud', 'tema_principal']:
+                    valid_fields[field_name] = ""
+                
+        return cls(**valid_fields)
 
 @dataclass
 class PQRSHistorico:
@@ -183,65 +194,29 @@ class PQRSHistorico:
     
     @classmethod
     def from_dict(cls, data: dict) -> 'PQRSHistorico':
-        """Crea una instancia desde un diccionario"""
-        # Mapeo de campos del Excel a campos del modelo
-        field_mapping = {
-            'numero_radicado': 'numero_radicado',
-            'MES': 'mes',
-            'CONSECUTIVO MES': 'consecutivo_mes',
-            'CONTROL DE RADICADO': 'control_radicado',
-            'RAD. RESPUESTA': 'rad_respuesta',
-            'PRIMERNOMBRE': 'primer_nombre',
-            'SEGUNDONOMBRE': 'segundo_nombre',
-            'PRIMERAPELLIDO': 'primer_apellido',
-            'SEGUNDOAPELLIDO': 'segundo_apellido',
-            'SOLICITANTE': 'nombre_completo',
-            'ASUNTO DE LA PETICIÓN': 'texto_pqrs',
-            'ESTADO': 'estado_pqrs',
-            'CLASE DE SOLICITUD': 'clasificacion',
-            'FECHA RADICACIÓN': 'fecha_radicacion',
-            'FECHA ENTRADA A SIF': 'fecha_entrada_sif',
-            'FECHA RADICADO RESPUESTA': 'fecha_respuesta',
-            'FECHA DE INGRESO': 'fecha_ingreso',
-            'FECHA DE INGRESO A LA BANDEJA': 'fecha_ingreso_bandeja',
-            'DATOS INICIALES PQRSD': 'datos_iniciales',
-            'SEGUIMIENTO DE LA PQRSD': 'seguimiento',
-            'OBSERVACIÓN': 'observacion',
-            'TIPO DE SOLICITUD': 'tipo_solicitud',
-            'TEMA': 'tema',
-            'SEMAFORO DIAS': 'semaforo_dias',
-            'OPORTUNIDAD': 'oportunidad',
-            'TIPO DOCUMENTO': 'tipo_documento',
-            'NÚMERO DOCUMENTO': 'numero_documento',
-            'CORREO1': 'correo',
-            'CELULAR 1': 'celular',
-            'DIRECCIÓN DEL PETICIONARIO': 'direccion',
-            'BARRIO, VEREDA O SECTOR': 'barrio',
-            'UNIDAD': 'unidad',
-            'AREAS DE INTERVENCIÓN': 'areas_intervencion',
-            'ENLACE': 'enlace',
-            'LÍDER': 'lider'
-        }
-        
-        # Mapear campos del Excel a campos del modelo
-        mapped_data = {}
-        for excel_field, model_field in field_mapping.items():
-            if excel_field in data:
-                mapped_data[model_field] = data[excel_field]
-        
-        # Asegurar que numero_radicado esté presente
-        if 'numero_radicado' not in mapped_data:
-            # Intentar obtener desde diferentes campos posibles
-            for field in ['numero_radicado', 'DOCUMENTO-CarguedeinformaciónalaplicativoPQRSDdelSIF', 'RAD. RESPUESTA']:
-                if field in data and data[field]:
-                    mapped_data['numero_radicado'] = str(data[field])
-                    break
-        
-        # Filtrar solo los campos que existen en el modelo
+        """Crea una instancia desde un diccionario (datos ya mapeados)"""
+        # Los datos ya vienen mapeados del repositorio
         valid_fields = {}
-        for k, v in mapped_data.items():
-            if k in cls.__dataclass_fields__:
-                valid_fields[k] = v
+        
+        # Mapear solo los campos que existen en el modelo
+        for field_name in cls.__dataclass_fields__:
+            if field_name in data:
+                value = data[field_name]
+                # Convertir valores NaN/None a string vacío para campos de texto
+                if pd.isna(value) or value is None:
+                    valid_fields[field_name] = ""
+                else:
+                    valid_fields[field_name] = str(value) if not isinstance(value, str) else value
+            else:
+                valid_fields[field_name] = ""
+        
+        # Asegurar que numero_radicado esté presente (campo obligatorio)
+        if not valid_fields.get('numero_radicado'):
+            # Buscar en campos alternativos
+            for alt_field in ['DOCUMENTO-CarguedeinformaciónalaplicativoPQRSDdelSIF', 'numero_radicado']:
+                if alt_field in data and data[alt_field] and not pd.isna(data[alt_field]):
+                    valid_fields['numero_radicado'] = str(data[alt_field])
+                    break
         
         return cls(**valid_fields)
 

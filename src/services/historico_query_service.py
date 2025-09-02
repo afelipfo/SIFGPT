@@ -21,23 +21,41 @@ class HistoricoQueryService:
         logger.info("Servicio unificado de consultas históricas inicializado")
     
     def consultar_por_radicado(self, numero_radicado: str) -> Dict[str, Any]:
-        """Consulta información de una PQRS por número de radicado"""
+        """Consulta información de una PQRS por número de radicado con información enriquecida"""
         try:
             historico = self.pqrs_repository.get_historico_by_radicado(numero_radicado)
             
             if historico:
+                # Crear respuesta enriquecida con información útil
+                info_util = {
+                    "numero_radicado": historico.numero_radicado,
+                    "solicitante": historico.nombre or historico.nombre_completo or "No especificado",
+                    "asunto": historico.texto_pqrs or "No disponible",
+                    "clasificacion": historico.clasificacion or "No clasificado",
+                    "estado_actual": historico.estado_pqrs or "Sin estado",
+                    "fecha_radicacion": str(historico.fecha_radicacion) if historico.fecha_radicacion else "No disponible",
+                    "unidad_responsable": historico.unidad or "Secretaría de Infraestructura Física",
+                    "barrio_sector": historico.barrio or "No especificado",
+                    "tipo_solicitud": historico.tipo_solicitud or "No especificado",
+                    "observaciones": historico.observacion or "Sin observaciones",
+                    "seguimiento": historico.seguimiento or "Sin seguimiento registrado",
+                    "telefono_contacto": historico.celular or "No disponible",
+                    "correo_contacto": historico.correo or "No disponible"
+                }
+                
                 return {
                     "success": True,
                     "tipo_consulta": "por_radicado",
-                    "datos": historico.to_dict(),
-                    "mensaje": f"Se encontró la PQRS con radicado {numero_radicado}"
+                    "datos": info_util,
+                    "datos_completos": historico.to_dict(),
+                    "mensaje": f"PQRS encontrada - Solicitante: {info_util['solicitante']} | Estado: {info_util['estado_actual']}"
                 }
             else:
                 return {
                     "success": False,
                     "tipo_consulta": "por_radicado",
                     "datos": None,
-                    "mensaje": f"No se encontró ninguna PQRS con el radicado {numero_radicado}"
+                    "mensaje": f"No se encontró ninguna PQRS con el radicado {numero_radicado}. Verifica que el número sea correcto."
                 }
                 
         except Exception as e:
@@ -46,7 +64,7 @@ class HistoricoQueryService:
                 "success": False,
                 "tipo_consulta": "por_radicado",
                 "error": str(e),
-                "mensaje": "Error al realizar la consulta"
+                "mensaje": "Error en la consulta del radicado. Intenta de nuevo o contacta soporte."
             }
     
     def buscar_por_texto(self, texto_busqueda: str) -> Dict[str, Any]:

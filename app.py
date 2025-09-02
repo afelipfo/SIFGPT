@@ -107,6 +107,49 @@ def test_historico():
             "error": str(e)
         }), 500
 
+@app.route('/debug/excel')
+def debug_excel():
+    """Endpoint de debug para verificar datos del Excel"""
+    try:
+        import pandas as pd
+        
+        # Cargar Excel directamente
+        df = pd.read_excel('input/historico/historico2.xlsx')
+        
+        # Buscar registros específicos
+        test_radicados = ['202510292228', '202510291196', '202510293082']
+        resultados = {}
+        
+        for radicado in test_radicados:
+            # Búsqueda en columna original
+            original_search = df[df['DOCUMENTO-CarguedeinformaciónalaplicativoPQRSDdelSIF'].astype(str) == radicado]
+            
+            if len(original_search) > 0:
+                row = original_search.iloc[0]
+                resultados[radicado] = {
+                    "encontrado": True,
+                    "estado": row['ESTADO'],
+                    "asunto": str(row['ASUNTO DE LA PETICIÓN'])[:100],
+                    "solicitante": row['SOLICITANTE'],
+                    "unidad": row['UNIDAD'],
+                    "primer_nombre": row['PRIMERNOMBRE'],
+                    "primer_apellido": row['PRIMERAPELLIDO']
+                }
+            else:
+                resultados[radicado] = {"encontrado": False}
+        
+        return jsonify({
+            "success": True,
+            "total_registros": len(df),
+            "resultados_debug": resultados
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
 @app.route('/test/advanced-historico')
 def test_advanced_historico():
     """Endpoint de prueba para funcionalidades avanzadas del histórico unificado"""
