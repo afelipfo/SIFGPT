@@ -1,8 +1,13 @@
-[{"nombre": "El nombre de la persona que hace la PQRSD",
-"telefono": "El teléfono de la persona que hace la PQRSD",
-"cedula": "Cédula o identificación de la persona que hace la PQRSD",
-"clase": "Clasificación de la PQRSD",
-"explicacion": "Explicación de la elección hecha",
-"radicado": "Número de radicado que puede estar presente en la PQRSD", 
-"entidad_responde": "Entidad que debería de responder la PQRS"},
-"es_faq": "Sí/No es una pregunta frecuente"}]
+{
+"nombre": "Nombre completo de la persona (combinar PRIMERNOMBRE + PRIMERAPELLIDO si están separados)",
+"telefono": "Número de teléfono o celular de contacto",
+"cedula": "Número de documento de identificación",
+"clase": "Clasificación según tipos reales: SOLICITUD-INTERÉS PARTICULAR, TRÁMITE, SOLICITUD-INTERÉS GENERAL, SOLICITUD DE INFORMACIÓN, TUTELA, QUEJA, RECLAMO, SUGERENCIA, DENUNCIA",
+"explicacion": "Explicación detallada del motivo de la clasificación elegida",
+"radicado": "Número de radicado si está mencionado (formato: 202XXXXXXXXX)",
+"entidad_responde": "Unidad específica que debe responder según el tema: Mantenimiento, Socio ambiental y Paisajismo, Licencia de intervención del espacio público, etc.",
+"es_faq": "Sí/No - Si es una pregunta frecuente que ya tiene respuesta estándar",
+"barrio": "Barrio, vereda o sector mencionado en la solicitud",
+"tipo_solicitud": "Tipo específico según datos reales: SOLICITUD-INTERÉS PARTICULAR, TRÁMITE, etc.",
+"tema_principal": "Tema principal identificado: mantenimiento vial, espacio público, licencias, etc."
+}

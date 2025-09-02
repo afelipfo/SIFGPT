@@ -1,9 +1,18 @@
-- Secretaría de Infraestructura Física - Alcaldía de Medellín
+- Secretaría de Infraestructura Física - Alcaldía de Medellín (Entidad principal)
 
-- Secretaría de Salud
+UNIDADES ESPECIALIZADAS DE LA SECRETARÍA:
+- Unidad de Mantenimiento (mantenimiento vial, reparaciones, bacheo)
+- Unidad Socio Ambiental y Paisajismo (espacios verdes, arborización, paisajismo)
+- Unidad de Licencias de Intervención del Espacio Público (permisos, autorizaciones)
+- Unidad de Solicitudes Entes de Control y Proyectos Especiales (supervisión, control)
+- Unidad de Apoyo Jurídico Infraestructura Física (temas legales, normatividad)
+- Unidad de Mantenimiento Problemas de Estabilidad (estructuras, geotecnia)
+- Unidad de Estudios y Diseños (proyectos técnicos, planos)
+- Unidad de Ejecución de Proyectos (construcción, obras)
+- Unidad de Gestión de la Información y Proyectos (seguimiento, documentación)
 
-- Secretaría de Educación
-
-- Secretaría de Hacienda
-
-- Secretaría de Vivienda
+OTRAS SECRETARÍAS (cuando corresponda):
+- Secretaría de Salud (temas sanitarios relacionados con infraestructura)
+- Secretaría de Educación (infraestructura educativa)
+- Secretaría de Movilidad (señalización, semaforización)
+- Secretaría de Medio Ambiente (impacto ambiental de obras)

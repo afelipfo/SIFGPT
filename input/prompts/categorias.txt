@@ -1,14 +1,18 @@
-Petición: Es un derecho fundamental que permite a los ciudadanos solicitar información o requerir una actuación de las autoridades públicas. Este derecho implica la posibilidad de presentar peticiones respetuosas a las autoridades por motivos de interés general o particular y recibir una respuesta en un plazo determinado. Puede ser la solicitud de forma verbal o escrita donde se solicite a la empresa su intervención en un asunto puntual y concreto. La petición puede ser que realicen una acción o simplemente solicitar cierta información.
+SOLICITUD-INTERÉS PARTICULAR: Peticiones específicas de ciudadanos individuales relacionadas con infraestructura física, mantenimiento vial, intervención del espacio público, y otros temas de competencia de la Secretaría de Infraestructura Física.
 
-Queja: Es la inconformidad que presenta el usuario, ya sea de manera verbal o escrita, para mostrar su disgusto hacia cierto proceso, ejecutivo de atención o departamento de una empresa.
+TRÁMITE: Procedimientos administrativos formales que requieren seguimiento específico, como licencias de intervención del espacio público, permisos de construcción, autorizaciones viales, y otros procesos reglamentados.
 
-Reclamo: Es una manifestación de inconformidad o queja que realiza una persona o entidad ante otra, generalmente en situaciones donde se considera que se ha producido un error, injusticia o incumplimiento de obligaciones. El reclamo busca la corrección de la situación, compensación o aclaración.
+SOLICITUD-INTERÉS GENERAL: Peticiones que benefician a la comunidad en general, como mejoras en infraestructura barrial, reparación de vías principales, proyectos de espacio público, y obras de interés colectivo.
 
-Sugerencia: Cualquier expresión verbal o escrita de recomendación entregada por el cliente con el propósito de mejorar el servicio y/o los productos ofrecidos.
+SOLICITUD DE INFORMACIÓN: Requerimientos de acceso a información pública relacionada con proyectos de infraestructura, estado de obras, presupuestos, contratos, y documentación técnica de la Secretaría.
 
-Denuncia: La denuncia es la acción por la cual una persona informa a las autoridades competentes sobre la comisión de un delito o infracción. Puede presentarse ante la Fiscalía General de la Nación, la Policía Nacional o los jueces de control de garantías, y no requiere la representación de un abogado.
+TUTELA: Acciones constitucionales para protección de derechos fundamentales relacionados con infraestructura, accesibilidad, movilidad, y otros temas que afecten derechos básicos de los ciudadanos.
 
-Tutela: Es un mecanismo de protección que permite a toda persona acudir ante las autoridades judiciales para obtener la protección inmediata de sus derechos fundamentales.
+QUEJA: Manifestaciones de inconformidad sobre servicios, procesos, funcionarios, o actuaciones de la Secretaría de Infraestructura Física que no cumplan con las expectativas o estándares de calidad.
 
-Felicitación: Es la expresión de alegría y buenos deseos dirigida a alguien por un logro, acontecimiento feliz o día especial. Las felicitaciones se dan en diversas ocasiones como cumpleaños, aniversarios, éxitos académicos, profesionales, entre otros.
+RECLAMO: Solicitudes de corrección, reparación o compensación por daños, errores, o incumplimientos en proyectos de infraestructura, mantenimiento vial, o servicios de la Secretaría.
+
+SUGERENCIA: Recomendaciones para mejorar procesos, servicios, infraestructura urbana, o la gestión de la Secretaría de Infraestructura Física.
+
+DENUNCIA: Informes sobre irregularidades, corrupción, mal uso de recursos públicos, o violaciones normativas en proyectos y procesos de infraestructura física.
 

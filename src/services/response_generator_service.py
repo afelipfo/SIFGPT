@@ -82,12 +82,14 @@ class ResponseGeneratorService:
             sys_prompt_solucion = self.prompt_repository.get_prompt('sys_prompt_solucion')
             faqs = self.prompt_repository.get_prompt('faqs')
             
-            # Formatear plantilla
+            # Formatear plantilla para nueva PQRS
             formatted_plantilla = plantilla.format(
-                nombre=pqrs_data.nombre,
+                nombre=pqrs_data.nombre or "Ciudadano/a",
                 fecha=fecha,
+                clase=pqrs_data.clase,
+                tipo_solicitud=pqrs_data.tipo_solicitud or pqrs_data.clase,
                 entidad=pqrs_data.entidad_responde,
-                clase=pqrs_data.clase
+                tema_principal=pqrs_data.tema_principal or "Infraestructura física"
             )
             
             # Formatear prompt de solución
@@ -128,20 +130,17 @@ class ResponseGeneratorService:
             sys_prompt_solucion = self.prompt_repository.get_prompt('sys_prompt_solucion')
             faqs = self.prompt_repository.get_prompt('faqs')
             
-            # Formatear plantilla - usar solo la parte de nueva PQRS
-            formatted_plantilla = f"""Estimado {pqrs_data.nombre}, hoy {fecha} te informamos que:
-
-Tu {pqrs_data.clase} ha sido enviada al área encargada en la {pqrs_data.entidad_responde}, y está siendo procesada en el sistema.
-
-Información del trámite:
-- Radicado: {historico.numero_radicado}
-- Estado actual: {historico.estado_pqrs}
-- Clasificación: {historico.clasificacion}
-
-Si necesitas más información, no dudes en contactarnos.
-
-Atentamente,
-Secretaría de Infraestructura Física - Alcaldía de Medellín."""
+            # Formatear plantilla para consulta de estado
+            formatted_plantilla = plantilla_hist.format(
+                nombre=pqrs_data.nombre or historico.nombre or "Ciudadano/a",
+                fecha=fecha,
+                radicado=historico.numero_radicado,
+                estado=historico.estado_pqrs or "En proceso",
+                unidad=historico.unidad or "Secretaría de Infraestructura Física",
+                fecha_radicacion=historico.fecha_radicacion or "No disponible",
+                barrio=historico.barrio or "No especificado",
+                informacion_adicional=f"Asunto: {historico.texto_pqrs[:200] + '...' if len(historico.texto_pqrs or '') > 200 else historico.texto_pqrs or 'No disponible'}"
+            )
             
             # Formatear prompt de solución
             formatted_sys_prompt = sys_prompt_solucion.format(faqs=faqs)

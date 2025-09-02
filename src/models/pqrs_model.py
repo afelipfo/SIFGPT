@@ -30,6 +30,9 @@ class PQRSData:
     radicado: str
     entidad_responde: str
     es_faq: str
+    barrio: str = ""
+    tipo_solicitud: str = ""
+    tema_principal: str = ""
     
     def __post_init__(self):
         """Validación post-inicialización"""
@@ -60,7 +63,10 @@ class PQRSData:
             "explicacion": self.explicacion,
             "radicado": self.radicado,
             "entidad_responde": self.entidad_responde,
-            "es_faq": self.es_faq
+            "es_faq": self.es_faq,
+            "barrio": self.barrio,
+            "tipo_solicitud": self.tipo_solicitud,
+            "tema_principal": self.tema_principal
         }
     
     @classmethod
