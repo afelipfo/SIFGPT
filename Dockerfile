@@ -1,14 +1,21 @@
-# Dockerfile para TUNRAG
-FROM python:3.12-slim
+# Dockerfile para SIFGPT
+FROM python:3.11-slim
 
-# Establecer directorio de trabajo
-WORKDIR /app
+# Establecer variables de entorno
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=production
 
 # Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
+    curl \
     && rm -rf /var/lib/apt/lists/*
+
+# Crear directorio de trabajo
+WORKDIR /app
 
 # Copiar archivos de dependencias
 COPY requirements.txt .
@@ -16,24 +23,16 @@ COPY requirements.txt .
 # Instalar dependencias de Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar código fuente
+# Copiar código de la aplicación
 COPY . .
 
-# Crear directorios necesarios
-RUN mkdir -p logs input/audios
-
 # Crear usuario no-root para seguridad
-RUN useradd --create-home --shell /bin/bash tunrag && \
-    chown -R tunrag:tunrag /app
-USER tunrag
+RUN useradd --create-home --shell /bin/bash sifgpt && \
+    chown -R sifgpt:sifgpt /app
+USER sifgpt
 
 # Exponer puerto
 EXPOSE 5000
-
-# Variables de entorno por defecto
-ENV PYTHONPATH=/app/src
-ENV FLASK_APP=app.py
-ENV FLASK_ENV=production
 
 # Comando de inicio
 CMD ["python", "app.py"]

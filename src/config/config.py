@@ -9,7 +9,7 @@ class Config:
     """Configuración centralizada del proyecto TUNRAG"""
     
     # Configuración de la aplicación
-    APP_NAME = "TUNRAG - Sistema de PQRS"
+    APP_NAME = "SIFGPT - Sistema de PQRS"
     DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
     

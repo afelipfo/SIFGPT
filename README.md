@@ -1,4 +1,4 @@
-# 🚀 TUNRAG - Sistema de PQRS Inteligente Unificado
+# 🚀 SIFGPT - Sistema de PQRS Inteligente Unificado
 
 **Sistema automatizado para procesamiento de PQRS (Peticiones, Quejas, Reclamos y Sugerencias) usando Inteligencia Artificial - TODO EN UNA SOLA INTERFAZ.**
 
@@ -27,7 +27,7 @@
 ## 🏗️ **ARQUITECTURA UNIFICADA**
 
 ```
-TUNRAG/
+SIFGPT/
 ├── 📁 src/                    # Código fuente del backend
 │   ├── 🎮 controllers/        # Controladores de la API
 │   ├── 🏗️ models/            # Modelos de datos
@@ -38,7 +38,7 @@ TUNRAG/
 ├── 🌐 templates/              # Plantilla HTML unificada
 ├── 🎨 static/                 # CSS, JS e imágenes
 │   └── js/
-│       └── tunrag-unified.js  # JavaScript unificado
+│       └── sifgpt-unified.js  # JavaScript unificado
 ├── 📁 input/                  # Datos y archivos de entrada
 ├── 📊 notebooks/              # Jupyter notebooks de análisis
 └── 🐳 Docker/                 # Configuración de contenedores
@@ -54,7 +54,7 @@ TUNRAG/
 ### **1. Clonar el repositorio**
 ```bash
 git clone <repository-url>
-cd TUNRAG
+cd SIFGPT
 ```
 
 ### **2. Instalar dependencias**
@@ -176,12 +176,12 @@ curl http://localhost:5000/api/health
 
 ### **Construir imagen**
 ```bash
-docker build -t tunrag .
+docker build -t sifgpt .
 ```
 
 ### **Ejecutar contenedor**
 ```bash
-docker run -p 5000:5000 tunrag
+docker run -p 5000:5000 sifgpt
 ```
 
 ### **Usar docker-compose**
@@ -203,7 +203,7 @@ docker-compose up -d
 - **Sistema de Logging**: 100% funcional
 
 ### 🎯 **VEREDICTO FINAL**
-**TUNRAG está 100% FUNCIONAL con INTERFAZ UNIFICADA.**
+**SIFGPT está 100% FUNCIONAL con INTERFAZ UNIFICADA.**
 
 ### 🆕 **NOVEDADES DE LA VERSIÓN UNIFICADA**
 - ✅ **Una sola interfaz** para todas las funcionalidades
@@ -236,13 +236,13 @@ docker-compose up -d
 ## 📝 **LOGS Y MONITOREO**
 
 ### **Archivos de Log**
-- **Principal**: `logs/tunrag.log`
+- **Principal**: `logs/sifgpt.log`
 - **Nivel**: Configurable via `LOG_LEVEL`
 - **Formato**: Timestamp + Nivel + Mensaje
 
 ### **Monitoreo en Tiempo Real**
 ```bash
-tail -f logs/tunrag.log
+tail -f logs/sifgpt.log
 ```
 
 ## 🤝 **CONTRIBUCIÓN**
@@ -269,13 +269,13 @@ Este proyecto está bajo la licencia MIT. Ver archivo `LICENSE` para más detall
 ## 📞 **CONTACTO**
 
 - **Desarrollador**: Felipe
-- **Proyecto**: TUNRAG - Sistema de PQRS Unificado
+- **Proyecto**: SIFGPT - Sistema de PQRS Unificado
 - **Versión**: 2.0.0 UNIFICADA
 - **Estado**: ✅ 100% FUNCIONAL + INTERFAZ UNIFICADA
 
 ---
 
-## 🎉 **¡TUNRAG UNIFICADO ESTÁ LISTO!**
+## 🎉 **¡SIFGPT UNIFICADO ESTÁ LISTO!**
 
 **Ahora tienes TODO en un solo lugar:**
 - 🎯 **Un solo localhost:5000** para el frontend

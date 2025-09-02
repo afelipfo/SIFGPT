@@ -1,4 +1,4 @@
-# 🚀 **FUNCIONALIDADES AVANZADAS - TUNRAG PQRS SYSTEM**
+# 🚀 **FUNCIONALIDADES AVANZADAS - SIFGPT PQRS SYSTEM**
 
 ## **📋 ÍNDICE**
 
@@ -390,7 +390,7 @@ const response = await fetch('/api/advanced-historico/exportar', {
 ### **Logs y Debugging**
 ```bash
 # Ver logs de la aplicación
-tail -f logs/tunrag.log
+tail -f logs/sifgpt.log
 
 # Verificar estado de servicios
 curl http://localhost:5000/api/health
@@ -426,7 +426,7 @@ curl http://localhost:5000/test/advanced-historico
 - 📚 **Documentación**: Este archivo
 - 🐛 **Issues**: Sistema de tickets
 - 💬 **Chat**: Canal de soporte
-- 📧 **Email**: soporte@tunrag.com
+- 📧 **Email**: soporte@sifgpt.com
 
 ### **Comunidad**
 - 👥 **Foro**: Comunidad de usuarios
@@ -436,6 +436,6 @@ curl http://localhost:5000/test/advanced-historico
 
 ---
 
-**🎉 ¡FELICITACIONES! Tu aplicación TUNRAG ahora es PROFESIONAL y COMPLETA**
+**🎉 ¡FELICITACIONES! Tu aplicación SIFGPT ahora es PROFESIONAL y COMPLETA**
 
 *Con estas funcionalidades avanzadas, has transformado tu sistema en una herramienta empresarial de primer nivel.*

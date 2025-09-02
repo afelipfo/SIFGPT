@@ -1,22 +1,24 @@
 """
-TUNRAG - Sistema de PQRS con Inteligencia Artificial
-====================================================
+SIFGPT - Sistema de PQRS con Inteligencia Artificial
 
-Este paquete contiene la implementación refactorizada del sistema TUNRAG
-siguiendo principios de arquitectura de software modernos.
+Este paquete contiene la implementación refactorizada del sistema SIFGPT
+para el procesamiento inteligente de PQRS (Peticiones, Quejas, Reclamos y Sugerencias).
 
-Estructura del paquete:
-- config/: Configuración centralizada
-- models/: Modelos de datos
-- services/: Servicios de negocio
-- repositories/: Acceso a datos
-- controllers/: Controladores de API
-- utils/: Utilidades comunes
+Módulos principales:
+- config: Configuración del sistema
+- controllers: Controladores de la API
+- models: Modelos de datos
+- repositories: Acceso a datos
+- services: Lógica de negocio
+- utils: Utilidades y logging
 
-Autor: TUNRAG Team
+Autor: SIFGPT Team
+Fecha: 2024
 Versión: 2.0.0
 """
 
 __version__ = "2.0.0"
-__author__ = "TUNRAG Team"
+__author__ = "SIFGPT Team"
+__email__ = "soporte@sifgpt.com"
 __description__ = "Sistema de PQRS con Inteligencia Artificial"
+__license__ = "MIT"

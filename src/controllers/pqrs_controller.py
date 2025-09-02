@@ -318,7 +318,7 @@ class HealthController:
         try:
             return jsonify({
                 "status": "healthy",
-                "service": "TUNRAG PQRS",
+                "service": "SIFGPT PQRS",
                 "version": "1.0.0"
             })
         except Exception as e:
@@ -337,7 +337,7 @@ class HealthController:
             
             health_status = {
                 "status": "healthy" if system_valid else "unhealthy",
-                "service": "TUNRAG PQRS",
+                "service": "SIFGPT PQRS",
                 "version": "1.0.0",
                 "system_status": system_status,
                 "system_valid": system_valid,

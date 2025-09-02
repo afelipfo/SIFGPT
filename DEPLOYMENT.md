@@ -1,4 +1,4 @@
-# 🚀 Guía de Despliegue de TUNRAG
+# 🚀 Guía de Despliegue de SIFGPT
 
 ## 📋 Prerrequisitos
 
@@ -23,7 +23,7 @@
 ### **1. Clonar el Repositorio**
 ```bash
 git clone <repository-url>
-cd TUNRAG
+cd SIFGPT
 ```
 
 ### **2. Configuración Automática (Recomendado)**
@@ -61,18 +61,18 @@ La aplicación estará disponible en `http://localhost:5000`
 
 ### **1. Construir la Imagen**
 ```bash
-docker build -t tunrag .
+docker build -t sifgpt .
 ```
 
 ### **2. Ejecutar el Contenedor**
 ```bash
 docker run -d \
-  --name tunrag \
+  --name sifgpt \
   -p 5000:5000 \
   -e OPENAI_API_KEY=tu_api_key \
   -v $(pwd)/logs:/app/logs \
   -v $(pwd)/input:/app/input \
-  tunrag
+  sifgpt
 ```
 
 ### **3. Usar Docker Compose (Recomendado)**
@@ -84,7 +84,7 @@ export OPENAI_API_KEY=tu_api_key
 docker-compose up -d
 
 # Ver logs
-docker-compose logs -f tunrag
+docker-compose logs -f sifgpt
 
 # Detener
 docker-compose down
@@ -110,7 +110,7 @@ sudo apt install python3 python3-pip python3-venv git -y
 ```bash
 # Clonar repositorio
 git clone <repository-url>
-cd TUNRAG
+cd SIFGPT
 
 # Configurar
 python3 setup.py
@@ -122,20 +122,20 @@ nano .env
 
 #### **3. Configurar Systemd Service**
 ```bash
-sudo nano /etc/systemd/system/tunrag.service
+sudo nano /etc/systemd/system/sifgpt.service
 ```
 
 ```ini
 [Unit]
-Description=TUNRAG PQRS System
+Description=SIFGPT PQRS System
 After=network.target
 
 [Service]
 Type=simple
 User=ubuntu
-WorkingDirectory=/home/ubuntu/TUNRAG
-Environment=PATH=/home/ubuntu/TUNRAG/venv/bin
-ExecStart=/home/ubuntu/TUNRAG/venv/bin/python app.py
+WorkingDirectory=/home/ubuntu/SIFGPT
+Environment=PATH=/home/ubuntu/SIFGPT/venv/bin
+ExecStart=/home/ubuntu/SIFGPT/venv/bin/python app.py
 Restart=always
 RestartSec=10
 
@@ -146,15 +146,15 @@ WantedBy=multi-user.target
 #### **4. Activar y Iniciar Servicio**
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable tunrag
-sudo systemctl start tunrag
-sudo systemctl status tunrag
+sudo systemctl enable sifgpt
+sudo systemctl start sifgpt
+sudo systemctl status sifgpt
 ```
 
 #### **5. Configurar Nginx (Opcional)**
 ```bash
 sudo apt install nginx -y
-sudo nano /etc/nginx/sites-available/tunrag
+sudo nano /etc/nginx/sites-available/sifgpt
 ```
 
 ```nginx
@@ -173,7 +173,7 @@ server {
 ```
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/tunrag /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/sifgpt /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 ```
@@ -182,7 +182,7 @@ sudo systemctl restart nginx
 
 #### **1. Crear Instancia**
 ```bash
-gcloud compute instances create tunrag \
+gcloud compute instances create sifgpt \
   --zone=us-central1-a \
   --machine-type=e2-medium \
   --image-family=debian-11 \
@@ -206,7 +206,7 @@ gcloud compute firewall-rules create allow-https \
 #### **3. Desplegar Aplicación**
 ```bash
 # Conectar a la instancia
-gcloud compute ssh tunrag --zone=us-central1-a
+gcloud compute ssh sifgpt --zone=us-central1-a
 
 # Seguir pasos similares a AWS
 ```
@@ -216,8 +216,8 @@ gcloud compute ssh tunrag --zone=us-central1-a
 #### **1. Crear VM**
 ```bash
 az vm create \
-  --resource-group tunrag-rg \
-  --name tunrag-vm \
+  --resource-group sifgpt-rg \
+--name sifgpt-vm \
   --image UbuntuLTS \
   --size Standard_B2s \
   --admin-username azureuser \
@@ -227,8 +227,8 @@ az vm create \
 #### **2. Configurar NSG**
 ```bash
 az network nsg rule create \
-  --resource-group tunrag-rg \
-  --nsg-name tunrag-vmNSG \
+  --resource-group sifgpt-rg \
+--nsg-name sifgpt-vmNSG \
   --name allow-http \
   --protocol tcp \
   --priority 1000 \
@@ -283,10 +283,10 @@ sudo crontab -e
 ### **Logs del Sistema**
 ```bash
 # Ver logs en tiempo real
-sudo journalctl -u tunrag -f
+sudo journalctl -u sifgpt -f
 
 # Ver logs de la aplicación
-tail -f logs/tunrag.log
+tail -f logs/sifgpt.log
 
 # Limpiar logs antiguos
 python maintenance.py --clean-logs 30
@@ -295,13 +295,13 @@ python maintenance.py --clean-logs 30
 ### **Estado del Servicio**
 ```bash
 # Verificar estado
-sudo systemctl status tunrag
+sudo systemctl status sifgpt
 
 # Reiniciar servicio
-sudo systemctl restart tunrag
+sudo systemctl restart sifgpt
 
 # Ver logs del servicio
-sudo journalctl -u tunrag
+sudo journalctl -u sifgpt
 ```
 
 ### **Mantenimiento Automático**
@@ -310,8 +310,8 @@ sudo journalctl -u tunrag
 crontab -e
 
 # Agregar:
-0 2 * * 0 python /ruta/a/tunrag/maintenance.py --optimize
-0 3 * * 0 python /ruta/a/tunrag/maintenance.py --backup
+0 2 * * 0 python /ruta/a/sifgpt/maintenance.py --optimize
+0 3 * * 0 python /ruta/a/sifgpt/maintenance.py --backup
 ```
 
 ### **Backups**
@@ -320,7 +320,7 @@ crontab -e
 python maintenance.py --backup
 
 # Backup automático con cron
-0 4 * * 0 python /ruta/a/tunrag/maintenance.py --backup
+0 4 * * 0 python /ruta/a/sifgpt/maintenance.py --backup
 ```
 
 ## 🚨 Solución de Problemas
@@ -330,13 +330,13 @@ python maintenance.py --backup
 #### **1. Servicio no inicia**
 ```bash
 # Verificar logs
-sudo journalctl -u tunrag -n 50
+sudo journalctl -u sifgpt -n 50
 
 # Verificar configuración
 python test_basic.py
 
 # Verificar permisos
-ls -la /ruta/a/tunrag/
+ls -la /ruta/a/sifgpt/
 ```
 
 #### **2. Error de puerto ocupado**
@@ -391,7 +391,7 @@ curl http://localhost:5000/system/status
 
 ### **Load Balancer**
 ```nginx
-upstream tunrag_backend {
+upstream sifgpt_backend {
     server 127.0.0.1:5000;
     server 127.0.0.1:5001;
     server 127.0.0.1:5002;
@@ -400,7 +400,7 @@ upstream tunrag_backend {
 server {
     listen 80;
     location / {
-        proxy_pass http://tunrag_backend;
+        proxy_pass http://sifgpt_backend;
     }
 }
 ```
@@ -423,10 +423,10 @@ python app.py --port 5002
 docker swarm init
 
 # Desplegar stack
-docker stack deploy -c docker-compose.yml tunrag
+docker stack deploy -c docker-compose.yml sifgpt
 
 # Escalar servicio
-docker service scale tunrag_tunrag=3
+docker service scale sifgpt_sifgpt=3
 ```
 
 ## 🎯 Checklist de Despliegue
@@ -467,4 +467,4 @@ docker service scale tunrag_tunrag=3
 
 ---
 
-**¡TUNRAG está listo para revolucionar la atención al ciudadano!** 🚀
+**¡SIFGPT está listo para revolucionar la atención al ciudadano!** 🚀

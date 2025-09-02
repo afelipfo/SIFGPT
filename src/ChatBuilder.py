@@ -16,8 +16,8 @@ class ChatBuilder:
     def build_interface(self):
         """Construye la interfaz de Gradio"""
         try:
-            with gr.Blocks(title="TUNRAG - Sistema de PQRS") as interface:
-                gr.Markdown("# 🤖 TUNRAG - Sistema de PQRS Inteligente")
+                with gr.Blocks(title="SIFGPT - Sistema de PQRS") as interface:
+        gr.Markdown("# 🤖 SIFGPT - Sistema de PQRS Inteligente"
                 gr.Markdown("Sistema automatizado para procesamiento de PQRS usando IA")
                 
                 with gr.Row():

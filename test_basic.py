@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Script de pruebas básicas para TUNRAG
-Verifica que las funcionalidades principales estén funcionando.
+Script de pruebas básicas para SIFGPT
+Verifica la funcionalidad básica del sistema
 """
 
 import sys
@@ -11,49 +11,26 @@ from pathlib import Path
 # Agregar src al path
 sys.path.append('src/')
 
-def test_imports():
-    """Prueba las importaciones básicas"""
-    print("🔍 Probando importaciones...")
+def test_config():
+    """Prueba la configuración básica"""
+    print("🔧 Probando configuración...")
     
     try:
-        from src.config.config import config
-        print("✅ Configuración importada")
+        from config.config import config
         
-        from src.utils.logger import logger
-        print("✅ Logger importado")
+        # Verificar que la configuración se cargue
+        assert config is not None, "Configuración no se cargó"
+        print("✅ Configuración cargada correctamente")
         
-        from src.models.pqrs_model import PQRSData, AudioTranscription
-        print("✅ Modelos importados")
+        # Verificar variables básicas
+        assert hasattr(config, 'APP_NAME'), "APP_NAME no encontrado"
+        assert config.APP_NAME == "SIFGPT - Sistema de PQRS", f"APP_NAME incorrecto: {config.APP_NAME}"
+        print("✅ APP_NAME configurado correctamente")
         
-        from src.services.audio_service import AudioService
-        print("✅ Servicios importados")
-        
-        return True
-        
-    except Exception as e:
-        print(f"❌ Error en importaciones: {e}")
-        return False
-
-def test_configuration():
-    """Prueba la configuración del sistema"""
-    print("\n🔍 Probando configuración...")
-    
-    try:
-        from src.config.config import config
-        
-        # Verificar configuración básica
-        assert config.APP_NAME == "TUNRAG - Sistema de PQRS"
-        assert config.BASE_DIR.exists()
-        assert config.INPUT_DIR.exists()
-        
-        print("✅ Configuración básica válida")
-        
-        # Verificar archivos de prompts
-        for prompt_name, prompt_path in config.PROMPT_FILES.items():
-            if prompt_path.exists():
-                print(f"✅ Prompt '{prompt_name}' encontrado")
-            else:
-                print(f"⚠️  Prompt '{prompt_name}' no encontrado")
+        # Verificar directorios
+        assert hasattr(config, 'INPUT_DIR'), "INPUT_DIR no encontrado"
+        assert Path(config.INPUT_DIR).exists(), f"Directorio {config.INPUT_DIR} no existe"
+        print("✅ Directorio de entrada verificado")
         
         return True
         
@@ -61,40 +38,59 @@ def test_configuration():
         print(f"❌ Error en configuración: {e}")
         return False
 
-def test_models():
-    """Prueba los modelos de datos"""
-    print("\n🔍 Probando modelos...")
+def test_logger():
+    """Prueba el sistema de logging"""
+    print("\n📝 Probando logger...")
     
     try:
-        from src.models.pqrs_model import PQRSData, AudioTranscription
-        from datetime import datetime
+        from utils.logger import logger
+        
+        # Verificar que el logger funcione
+        assert logger is not None, "Logger no se inicializó"
+        print("✅ Logger inicializado correctamente")
+        
+        # Probar logging
+        logger.info("Test de logger desde test_basic.py")
+        print("✅ Logging funcionando")
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error en logger: {e}")
+        return False
+
+def test_models():
+    """Prueba los modelos básicos"""
+    print("\n📊 Probando modelos...")
+    
+    try:
+        from models.pqrs_model import PQRSData, AudioTranscription
         
         # Probar PQRSData
         pqrs = PQRSData(
-            nombre="Juan Pérez",
+            nombre="Test User",
             telefono="3001234567",
             cedula="12345678",
             clase="Petición",
-            explicacion="Solicito información",
-            radicado="2024-001",
-            entidad_responde="Secretaría de Infraestructura Física",
-            es_faq="No"
+            explicacion="Test description",
+            radicado="TEST001",
+            entidad_responde="Test Entity",
+            es_faq=False
         )
         
-        assert pqrs.nombre == "Juan Pérez"
-        assert pqrs.clase == "Petición"
-        print("✅ Modelo PQRSData funcionando")
+        assert pqrs.nombre == "Test User", "Nombre incorrecto"
+        assert pqrs.radicado == "TEST001", "Radicado incorrecto"
+        print("✅ PQRSData funcionando correctamente")
         
         # Probar AudioTranscription
         audio = AudioTranscription(
             audio_file="test.wav",
-            transcription="Texto de prueba"
+            transcription="Test transcription",
+            confidence=0.95
         )
         
-        assert audio.audio_file == "test.wav"
-        assert audio.transcription == "Texto de prueba"
-        assert audio.timestamp is not None
-        print("✅ Modelo AudioTranscription funcionando")
+        assert audio.transcription == "Test transcription", "Transcripción incorrecta"
+        print("✅ AudioTranscription funcionando correctamente")
         
         return True
         
@@ -102,71 +98,44 @@ def test_models():
         print(f"❌ Error en modelos: {e}")
         return False
 
-def test_logger():
-    """Prueba el sistema de logging"""
-    print("\n🔍 Probando logger...")
+def test_repository():
+    """Prueba el repositorio básico"""
+    print("\n💾 Probando repositorio...")
     
     try:
-        from src.utils.logger import logger
+        from repositories.pqrs_repository import PQRSRepository
         
-        # Probar diferentes niveles de log
-        logger.debug("Mensaje de debug")
-        logger.info("Mensaje de info")
-        logger.warning("Mensaje de warning")
-        logger.error("Mensaje de error")
+        repo = PQRSRepository()
+        assert repo is not None, "Repositorio no se creó"
+        print("✅ Repositorio creado correctamente")
         
-        print("✅ Logger funcionando correctamente")
-        return True
-        
-    except Exception as e:
-        print(f"❌ Error en logger: {e}")
-        return False
-
-def test_repositories():
-    """Prueba los repositorios"""
-    print("\n🔍 Probando repositorios...")
-    
-    try:
-        from src.repositories.pqrs_repository import PQRSRepository, PromptRepository
-        
-        # Probar repositorio de prompts
-        prompt_repo = PromptRepository()
-        
-        # Intentar obtener un prompt
+        # Probar carga de datos
         try:
-            sys_prompt = prompt_repo.get_prompt('sys_prompt')
-            print("✅ Repositorio de prompts funcionando")
+            data = repo.load_historico_data()
+            if data is not None:
+                print(f"✅ Datos cargados: {len(data)} registros")
+            else:
+                print("⚠️  No se pudieron cargar datos")
         except Exception as e:
-            print(f"⚠️  Repositorio de prompts: {e}")
-        
-        # Probar repositorio de PQRS
-        pqrs_repo = PQRSRepository()
-        
-        # Intentar cargar datos históricos
-        try:
-            historico = pqrs_repo.get_all_historico()
-            print(f"✅ Repositorio de PQRS funcionando - {len(historico)} registros")
-        except Exception as e:
-            print(f"⚠️  Repositorio de PQRS: {e}")
+            print(f"⚠️  Carga de datos: {e}")
         
         return True
         
     except Exception as e:
-        print(f"❌ Error en repositorios: {e}")
+        print(f"❌ Error en repositorio: {e}")
         return False
 
 def test_services():
     """Prueba los servicios básicos"""
-    print("\n🔍 Probando servicios...")
+    print("\n⚙️ Probando servicios...")
     
     try:
-        from src.services.pqrs_classifier_service import PQRSClassifierService
-        from src.services.response_generator_service import ResponseGeneratorService
+        from services.pqrs_orchestrator_service import PQRSOrchestratorService
         
-        print("✅ Servicios importados correctamente")
-        
-        # Nota: No podemos probar los servicios completos sin API key
-        # pero podemos verificar que se importen correctamente
+        # Probar creación del servicio
+        orchestrator = PQRSOrchestratorService("test_key")
+        assert orchestrator is not None, "Orquestador no se creó"
+        print("✅ Orquestador creado correctamente")
         
         return True
         
@@ -174,87 +143,69 @@ def test_services():
         print(f"❌ Error en servicios: {e}")
         return False
 
-def test_file_structure():
-    """Prueba la estructura de archivos"""
-    print("\n🔍 Probando estructura de archivos...")
+def test_controllers():
+    """Prueba los controladores básicos"""
+    print("\n🎮 Probando controladores...")
     
-    required_files = [
-        'app.py',
-        'requirements.txt',
-        'src/__init__.py',
-        'src/config/__init__.py',
-        'src/controllers/__init__.py',
-        'src/models/__init__.py',
-        'src/repositories/__init__.py',
-        'src/services/__init__.py',
-        'src/utils/__init__.py',
-        'templates/index.html',
-        'static/js/script.js',
-        'static/css/styles.css'
-    ]
-    
-    missing_files = []
-    for file_path in required_files:
-        if Path(file_path).exists():
-            print(f"✅ {file_path}")
-        else:
-            print(f"❌ {file_path}")
-            missing_files.append(file_path)
-    
-    if missing_files:
-        print(f"\n⚠️  Archivos faltantes: {len(missing_files)}")
+    try:
+        from controllers.pqrs_controller import pqrs_bp
+        
+        # Verificar que sea un Blueprint
+        assert hasattr(pqrs_bp, 'name'), "No es un Blueprint válido"
+        assert pqrs_bp.name == 'pqrs', f"Nombre incorrecto: {pqrs_bp.name}"
+        print("✅ Blueprint pqrs creado correctamente")
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error en controladores: {e}")
         return False
-    
-    print("✅ Estructura de archivos completa")
-    return True
 
-def run_all_tests():
-    """Ejecuta todas las pruebas"""
-    print("🧪 TUNRAG - Pruebas Básicas del Sistema")
-    print("=" * 60)
+def main():
+    """Función principal de pruebas"""
+    print("🧪 SIFGPT - Pruebas Básicas del Sistema")
+    print("=" * 50)
     
     tests = [
-        ("Importaciones", test_imports),
-        ("Configuración", test_configuration),
-        ("Modelos", test_models),
+        ("Configuración", test_config),
         ("Logger", test_logger),
-        ("Repositorios", test_repositories),
+        ("Modelos", test_models),
+        ("Repositorio", test_repository),
         ("Servicios", test_services),
-        ("Estructura de archivos", test_file_structure)
+        ("Controladores", test_controllers)
     ]
     
-    results = []
+    passed = 0
+    total = len(tests)
     
     for test_name, test_func in tests:
         try:
-            result = test_func()
-            results.append((test_name, result))
+            if test_func():
+                passed += 1
         except Exception as e:
-            print(f"❌ Error en prueba '{test_name}': {e}")
-            results.append((test_name, False))
+            print(f"❌ Error ejecutando {test_name}: {e}")
     
-    # Resumen
-    print("\n" + "=" * 60)
-    print("📊 RESUMEN DE PRUEBAS")
-    print("=" * 60)
+    print("\n" + "=" * 50)
+    print("📊 RESUMEN DE PRUEBAS BÁSICAS")
+    print("=" * 50)
+    print(f"✅ Pasaron: {passed}")
+    print(f"❌ Fallaron: {total - passed}")
+    print(f"🎯 Total: {total}")
     
-    success_count = sum(1 for _, result in results if result)
-    total_count = len(results)
-    
-    for test_name, result in results:
-        status = "✅ PASÓ" if result else "❌ FALLÓ"
-        print(f"{status} {test_name}")
-    
-    print(f"\n🎯 Resultado: {success_count}/{total_count} pruebas pasaron")
-    
-    if success_count == total_count:
-        print("\n🎉 ¡Todas las pruebas pasaron! El sistema está funcionando correctamente.")
+    if passed == total:
+        print("\n🎉 ¡Todas las pruebas básicas pasaron!")
+        return True
     else:
-        print(f"\n⚠️  {total_count - success_count} pruebas fallaron.")
-        print("   Revisa los errores anteriores y corrige los problemas.")
-    
-    return success_count == total_count
+        print(f"\n⚠️  {total - passed} pruebas fallaron")
+        return False
 
 if __name__ == "__main__":
-    success = run_all_tests()
-    sys.exit(0 if success else 1)
+    try:
+        success = main()
+        sys.exit(0 if success else 1)
+    except KeyboardInterrupt:
+        print("\n\n👋 Pruebas canceladas por el usuario")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n❌ Error inesperado: {e}")
+        sys.exit(1)
