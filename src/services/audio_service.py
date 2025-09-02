@@ -33,9 +33,20 @@ class OpenAIWhisperStrategy(TranscriptionStrategy):
     def transcribe(self, audio_file) -> str:
         """Transcribe usando OpenAI Whisper"""
         try:
+            # Convertir FileStorage de Flask a bytes para OpenAI
+            if hasattr(audio_file, 'read'):
+                # Si es un FileStorage de Flask, leer los bytes
+                audio_bytes = audio_file.read()
+                # Crear un objeto BytesIO para OpenAI
+                from io import BytesIO
+                audio_io = BytesIO(audio_bytes)
+                audio_io.name = audio_file.filename  # OpenAI necesita el nombre del archivo
+            else:
+                audio_io = audio_file
+            
             transcription = self.client.audio.transcriptions.create(
                 model=self.model,
-                file=audio_file,
+                file=audio_io,
                 language='es',
                 response_format="text"
             )

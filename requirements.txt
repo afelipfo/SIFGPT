@@ -1,0 +1,8 @@
+flask
+flask-cors
+python-dotenv
+openai
+requests
+pandas
+numpy
+python-multipart
