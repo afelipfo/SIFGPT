@@ -1,11 +1,182 @@
-from flask import request, jsonify
+from flask import Blueprint, request, jsonify
 from typing import Dict, Any
 from src.services.pqrs_orchestrator_service import PQRSOrchestratorService
 from src.utils.logger import logger
 from src.config.config import config
 
+# Crear blueprint para PQRS
+pqrs_bp = Blueprint('pqrs', __name__)
+
+# Inicializar servicios
+try:
+    openai_api_key = config.OPENAI_API_KEY or 'test-key-for-development'
+    pqrs_orchestrator = PQRSOrchestratorService(openai_api_key)
+    logger.info("Controlador de PQRS inicializado exitosamente")
+except Exception as e:
+    logger.error(f"Error al inicializar controlador de PQRS: {e}")
+    pqrs_orchestrator = None
+
+@pqrs_bp.route('/process-text', methods=['POST'])
+def process_text():
+    """Endpoint para procesar PQRS desde texto"""
+    if not pqrs_orchestrator:
+        return jsonify({
+            "success": False,
+            "error": "Servicio de PQRS no disponible"
+        }), 503
+    
+    try:
+        data = request.get_json()
+        if not data or 'message' not in data:
+            return jsonify({
+                "success": False,
+                "error": "Mensaje no proporcionado"
+            }), 400
+        
+        message = data['message']
+        if not message or not message.strip():
+            return jsonify({
+                "success": False,
+                "error": "Mensaje vacío"
+            }), 400
+        
+        # Procesar PQRS
+        result = pqrs_orchestrator.process_text_pqrs(message.strip())
+        
+        if result["success"]:
+            return jsonify({
+                "success": True,
+                "response": result["response"]
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "error": result.get("error", "Error desconocido")
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"Error en endpoint process_text: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor"
+        }), 500
+
+@pqrs_bp.route('/process-audio', methods=['POST'])
+def process_audio():
+    """Endpoint para procesar PQRS desde audio"""
+    if not pqrs_orchestrator:
+        return jsonify({
+            "success": False,
+            "error": "Servicio de PQRS no disponible"
+        }), 503
+    
+    try:
+        # Verificar que se haya enviado un archivo de audio
+        if 'audio' not in request.files:
+            return jsonify({
+                "success": False,
+                "error": "No se proporcionó archivo de audio"
+            }), 400
+        
+        audio_file = request.files['audio']
+        if not audio_file.filename:
+            return jsonify({
+                "success": False,
+                "error": "Archivo de audio inválido"
+            }), 400
+        
+        # Procesar PQRS desde audio
+        result = pqrs_orchestrator.process_audio_pqrs(audio_file)
+        
+        if result["success"]:
+            return jsonify({
+                "success": True,
+                "transcript": result["transcription"],
+                "pqrs_data": result["pqrs_data"],
+                "response": result["response"]
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "error": result.get("error", "Error desconocido en el procesamiento")
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"Error en endpoint process_audio: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor al procesar el audio"
+        }), 500
+
+@pqrs_bp.route('/transcribe-audio', methods=['POST'])
+def transcribe_audio_only():
+    """Endpoint para transcribir solo audio (sin procesar PQRS)"""
+    if not pqrs_orchestrator:
+        return jsonify({
+            "success": False,
+            "error": "Servicio de PQRS no disponible"
+        }), 503
+    
+    try:
+        if 'audio' not in request.files:
+            return jsonify({
+                "success": False,
+                "error": "No se proporcionó archivo de audio"
+            }), 400
+        
+        audio_file = request.files['audio']
+        if not audio_file.filename:
+            return jsonify({
+                "success": False,
+                "error": "Archivo de audio inválido"
+            }), 400
+        
+        # Transcribir solo el audio
+        transcription = pqrs_orchestrator.audio_service.transcribe_audio(audio_file)
+        
+        if transcription:
+            return jsonify({
+                "success": True,
+                "transcription": transcription
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "error": "No se pudo transcribir el audio"
+            }), 400
+            
+    except Exception as e:
+        logger.error(f"Error en endpoint transcribe_audio: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor al transcribir audio"
+        }), 500
+
+@pqrs_bp.route('/status', methods=['GET'])
+def get_status():
+    """Endpoint para obtener estado del sistema"""
+    if not pqrs_orchestrator:
+        return jsonify({
+            "success": False,
+            "error": "Servicio de PQRS no disponible"
+        }), 503
+    
+    try:
+        status = pqrs_orchestrator.get_system_status()
+        return jsonify({
+            "success": True,
+            "status": status
+        })
+    except Exception as e:
+        logger.error(f"Error en endpoint get_status: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor"
+        }), 500
+
+# Mantener la clase original para compatibilidad
 class PQRSController:
-    """Controlador para endpoints de PQRS"""
+    """Controlador para endpoints de PQRS (mantenido para compatibilidad)"""
     
     def __init__(self, orchestrator_service: PQRSOrchestratorService):
         """Inicializa el controlador"""
@@ -98,9 +269,8 @@ class PQRSController:
             }), 500
     
     def transcribe_audio_only(self) -> Dict[str, Any]:
-        """Endpoint para solo transcribir audio"""
+        """Endpoint para transcribir solo audio"""
         try:
-            # Verificar que se haya enviado un archivo de audio
             if 'audio' not in request.files:
                 return jsonify({
                     "success": False,
@@ -114,65 +284,25 @@ class PQRSController:
                     "error": "Archivo de audio inválido"
                 }), 400
             
-            # Solo transcribir
-            transcription = self.orchestrator.transcribe_audio_only(audio_file)
+            # Transcribir solo el audio
+            transcription = self.orchestrator.audio_service.transcribe_audio(audio_file)
             
-            return jsonify({
-                "transcript": transcription,
-                "success": True
-            })
+            if transcription:
+                return jsonify({
+                    "success": True,
+                    "transcription": transcription
+                })
+            else:
+                return jsonify({
+                    "success": False,
+                    "error": "No se pudo transcribir el audio"
+                }), 400
                 
         except Exception as e:
             logger.error(f"Error en endpoint transcribe_audio_only: {e}")
             return jsonify({
                 "success": False,
-                "error": "Error interno del servidor"
-            }), 500
-    
-    def get_system_status(self) -> Dict[str, Any]:
-        """Endpoint para obtener estado del sistema"""
-        try:
-            status = self.orchestrator.get_system_status()
-            return jsonify(status)
-                
-        except Exception as e:
-            logger.error(f"Error en endpoint get_system_status: {e}")
-            return jsonify({
-                "success": False,
-                "error": "Error interno del servidor"
-            }), 500
-    
-    def refresh_caches(self) -> Dict[str, Any]:
-        """Endpoint para refrescar cachés"""
-        try:
-            self.orchestrator.refresh_all_caches()
-            return jsonify({
-                "success": True,
-                "message": "Cachés refrescadas exitosamente"
-            })
-                
-        except Exception as e:
-            logger.error(f"Error en endpoint refresh_caches: {e}")
-            return jsonify({
-                "success": False,
-                "error": "Error interno del servidor"
-            }), 500
-    
-    def validate_system(self) -> Dict[str, Any]:
-        """Endpoint para validar el sistema"""
-        try:
-            is_valid = self.orchestrator.validate_system()
-            return jsonify({
-                "success": True,
-                "system_valid": is_valid,
-                "message": "Sistema válido" if is_valid else "Sistema inválido"
-            })
-                
-        except Exception as e:
-            logger.error(f"Error en endpoint validate_system: {e}")
-            return jsonify({
-                "success": False,
-                "error": "Error interno del servidor"
+                "error": "Error interno del servidor al transcribir audio"
             }), 500
 
 class HealthController:

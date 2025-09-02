@@ -3,6 +3,60 @@ import os
 from src.services.pqrs_orchestrator_service import PQRSOrchestratorService
 from src.utils.logger import logger
 
+class ChatBuilder:
+    """Clase principal para construir interfaces de chat con Gradio"""
+    
+    def __init__(self, audio_path: str, transcript_api_key: str):
+        """Inicializa el constructor de chat"""
+        self.audio_path = audio_path
+        self.transcript_api_key = transcript_api_key
+        self.chat_actions = ChatActions(audio_path, transcript_api_key)
+        logger.info("ChatBuilder inicializado exitosamente")
+    
+    def build_interface(self):
+        """Construye la interfaz de Gradio"""
+        try:
+            with gr.Blocks(title="TUNRAG - Sistema de PQRS") as interface:
+                gr.Markdown("# 🤖 TUNRAG - Sistema de PQRS Inteligente")
+                gr.Markdown("Sistema automatizado para procesamiento de PQRS usando IA")
+                
+                with gr.Row():
+                    with gr.Column():
+                        chatbot = gr.Chatbot(label="Chat")
+                        msg = gr.Textbox(label="Mensaje", placeholder="Escribe tu consulta...")
+                        send_btn = gr.Button("Enviar", variant="primary")
+                    
+                    with gr.Column():
+                        audio_input = gr.Audio(label="Audio", type="filepath")
+                        audio_btn = gr.Button("Procesar Audio", variant="secondary")
+                        status = gr.Textbox(label="Estado del Sistema", interactive=False)
+                
+                # Eventos
+                send_btn.click(
+                    self.chat_actions.chat_response,
+                    inputs=[chatbot, msg],
+                    outputs=[chatbot, msg]
+                )
+                
+                audio_btn.click(
+                    self.chat_actions.audio_response,
+                    inputs=[chatbot, audio_input],
+                    outputs=[chatbot, audio_input]
+                )
+                
+                # Estado del sistema
+                interface.load(
+                    self.chat_actions.get_system_status,
+                    outputs=status
+                )
+            
+            logger.info("Interfaz de Gradio construida exitosamente")
+            return interface
+            
+        except Exception as e:
+            logger.error(f"Error construyendo interfaz: {e}")
+            raise
+
 class ChatActions:
     """Clase para manejar acciones del chat usando la nueva arquitectura"""
 

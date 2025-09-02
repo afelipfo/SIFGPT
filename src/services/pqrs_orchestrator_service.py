@@ -286,3 +286,69 @@ class PQRSOrchestratorService:
                 "error": str(e),
                 "mensaje": "Error al obtener resumen del histórico"
             }
+    
+    def get_audio_files(self, audio_path: str) -> list:
+        """Obtiene lista de archivos de audio del directorio especificado"""
+        try:
+            import os
+            from pathlib import Path
+            
+            audio_dir = Path(audio_path)
+            if not audio_dir.exists():
+                logger.warning(f"Directorio de audio no existe: {audio_path}")
+                return []
+            
+            audio_files = []
+            for ext in config.AUDIO_EXTENSIONS:
+                audio_files.extend(audio_dir.glob(ext))
+            
+            logger.info(f"Encontrados {len(audio_files)} archivos de audio en {audio_path}")
+            return audio_files
+            
+        except Exception as e:
+            logger.error(f"Error al obtener archivos de audio: {e}")
+            return []
+    
+    def transcribe_audio_only(self, audio_file_path: str) -> str:
+        """Transcribe solo el audio sin procesar PQRS"""
+        try:
+            logger.info(f"Iniciando transcripción de audio: {audio_file_path}")
+            
+            # Crear un objeto similar a FileStorage para compatibilidad
+            class MockFileStorage:
+                def __init__(self, file_path):
+                    self.file_path = file_path
+                    self.filename = os.path.basename(file_path)
+                
+                def read(self):
+                    with open(self.file_path, 'rb') as f:
+                        return f.read()
+            
+            mock_audio_file = MockFileStorage(audio_file_path)
+            transcription = self.audio_service.transcribe_audio(mock_audio_file)
+            
+            logger.info(f"Audio transcrito exitosamente: {len(transcription)} caracteres")
+            return transcription
+            
+        except Exception as e:
+            logger.error(f"Error al transcribir audio: {e}")
+            return ""
+    
+    def consultar_historico_inteligente(self, consulta: str) -> Dict[str, Any]:
+        """Consulta inteligente del histórico usando IA"""
+        try:
+            logger.info(f"Iniciando consulta inteligente: {consulta}")
+            
+            # Usar el servicio de histórico para la consulta
+            resultado = self.historico_service.consulta_inteligente(consulta)
+            
+            logger.info("Consulta inteligente completada exitosamente")
+            return resultado
+            
+        except Exception as e:
+            logger.error(f"Error en consulta inteligente: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "mensaje": "Error al realizar consulta inteligente"
+            }

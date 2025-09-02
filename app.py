@@ -1,181 +1,141 @@
+#!/usr/bin/env python3
+"""
+Aplicación principal de SIF-GPT - Sistema de PQRS
+"""
+
 from flask import Flask, render_template, request, jsonify
-from flask_cors import CORS
-from dotenv import load_dotenv
-import sys
-import os
-from pathlib import Path
-
-# Agregar src al path
-sys.path.append('src/')
-
-from src.config.config import config
-from src.utils.logger import logger
 from src.services.pqrs_orchestrator_service import PQRSOrchestratorService
-from src.controllers.pqrs_controller import PQRSController, HealthController
+from src.services.audio_service import AudioServiceFactory
 from src.controllers.historico_controller import historico_bp
+from src.controllers.advanced_historico_controller import advanced_historico_bp
+from src.controllers.pqrs_controller import pqrs_bp
+from src.utils.logger import logger
+import os
 
-# Cargar variables de entorno
-load_dotenv()
+app = Flask(__name__)
 
-def create_app():
-    """Factory function para crear la aplicación Flask"""
-    app = Flask(__name__)
-    CORS(app)
-    
-    # Configuración de la aplicación
-    app.config['SECRET_KEY'] = config.SECRET_KEY
-    app.config['DEBUG'] = config.DEBUG
-    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
-    
-    # Validar configuración
+# Configuración
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.secret_key = os.environ.get('SECRET_KEY', 'sif-gpt-secret-key-2024')
+
+# Registrar blueprints
+app.register_blueprint(historico_bp, url_prefix='/api/historico')
+app.register_blueprint(advanced_historico_bp, url_prefix='/api/advanced-historico')
+app.register_blueprint(pqrs_bp, url_prefix='/api/pqrs')
+
+# Inicializar servicios con API key por defecto para pruebas
+try:
+    openai_api_key = os.environ.get('OPENAI_API_KEY', 'test-key-for-development')
+    pqrs_orchestrator = PQRSOrchestratorService(openai_api_key)
+    # Crear AudioService usando la factory
+    audio_service = AudioServiceFactory.create_openai_service(openai_api_key)
+    logger.info("Servicios inicializados correctamente")
+except Exception as e:
+    logger.warning(f"No se pudo inicializar servicios: {e}")
+    pqrs_orchestrator = None
+    audio_service = None
+
+@app.route('/')
+def index():
+    """Página principal unificada"""
+    return render_template('index.html')
+
+@app.route('/api/health')
+def health_check():
+    """Verificación de salud de la aplicación"""
+    return jsonify({
+        "status": "healthy",
+        "service": "SIF-GPT PQRS System",
+        "version": "2.0.0",
+        "features": {
+            "historico": "✅ Disponible",
+            "advanced_historico": "✅ Disponible",
+            "pqrs_orchestrator": "✅ Disponible" if pqrs_orchestrator else "❌ No disponible",
+            "audio_service": "✅ Disponible" if audio_service else "❌ No disponible"
+        }
+    })
+
+@app.route('/test/historico')
+def test_historico():
+    """Endpoint de prueba para el servicio histórico"""
     try:
-        config.validate_config()
-        logger.info("Configuración validada exitosamente")
-    except Exception as e:
-        logger.error(f"Error en configuración: {e}")
-        raise
-    
-    # Inicializar servicios
-    try:
-        openai_api_key = os.getenv('OPENAI_API_KEY')
-        if not openai_api_key:
-            raise ValueError("OPENAI_API_KEY no está configurada")
-        
-        orchestrator_service = PQRSOrchestratorService(openai_api_key)
-        logger.info("Servicios inicializados exitosamente")
-        
-    except Exception as e:
-        logger.error(f"Error al inicializar servicios: {e}")
-        raise
-    
-    # Inicializar controladores
-    pqrs_controller = PQRSController(orchestrator_service)
-    health_controller = HealthController(orchestrator_service)
-    
-    # Registrar blueprints
-    app.register_blueprint(historico_bp, url_prefix='/api/historico')
-    
-    # Configurar rutas
-    @app.route('/')
-    def home():
-        """Página principal"""
-        return render_template('index.html')
-    
-    @app.route('/get_response', methods=['POST'])
-    def get_response():
-        """Endpoint para obtener respuesta a texto"""
-        return pqrs_controller.get_response()
-    
-    @app.route('/process_audio', methods=['POST'])
-    def process_audio():
-        """Endpoint para procesar audio completo"""
-        return pqrs_controller.process_audio()
-    
-    @app.route('/transcribe_audio', methods=['POST'])
-    def transcribe_audio():
-        """Endpoint para solo transcribir audio"""
-        return pqrs_controller.transcribe_audio_only()
-    
-    @app.route('/system/status', methods=['GET'])
-    def system_status():
-        """Endpoint para obtener estado del sistema"""
-        return pqrs_controller.get_system_status()
-    
-    @app.route('/system/refresh', methods=['POST'])
-    def refresh_caches():
-        """Endpoint para refrescar cachés"""
-        return pqrs_controller.refresh_caches()
-    
-    @app.route('/system/validate', methods=['GET'])
-    def validate_system():
-        """Endpoint para validar el sistema"""
-        return pqrs_controller.validate_system()
-    
-    @app.route('/health', methods=['GET'])
-    def health_check():
-        """Endpoint básico de salud"""
-        return health_controller.health_check()
-    
-    @app.route('/health/detailed', methods=['GET'])
-    def detailed_health_check():
-        """Endpoint detallado de salud"""
-        return health_controller.detailed_health_check()
-    
-    @app.route('/test/historico', methods=['GET'])
-    def test_historico():
-        """Endpoint de prueba para verificar el histórico"""
-        try:
-            # Obtener resumen del histórico
-            resumen = orchestrator_service.obtener_resumen_historico()
-            return jsonify({
-                "success": True,
-                "mensaje": "Prueba del histórico completada",
-                "resumen": resumen
-            })
-        except Exception as e:
-            logger.error(f"Error en prueba del histórico: {e}")
+        if not pqrs_orchestrator:
             return jsonify({
                 "success": False,
-                "error": str(e),
-                "mensaje": "Error al probar el histórico"
-            }), 500
-    
-    # Manejador de errores global
-    @app.errorhandler(Exception)
-    def handle_exception(e):
-        """Maneja excepciones no capturadas"""
-        logger.error(f"Excepción no capturada: {e}")
+                "error": "Servicio de orquestación no disponible"
+            }), 503
+        
+        # Probar consulta por radicado
+        radicado_test = "202510292021"
+        resultado_radicado = pqrs_orchestrator.historico_service.buscar_por_radicado(radicado_test)
+        
+        # Probar consulta por texto
+        texto_test = "reparacion"
+        resultado_texto = pqrs_orchestrator.historico_service.buscar_por_texto(texto_test)
+        
+        # Probar estadísticas
+        estadisticas = pqrs_orchestrator.historico_service.obtener_estadisticas()
+        
+        return jsonify({
+            "success": True,
+            "test_radicado": {
+                "radicado": radicado_test,
+                "resultado": resultado_radicado
+            },
+            "test_texto": {
+                "texto": texto_test,
+                "resultado": resultado_texto
+            },
+            "estadisticas": estadisticas
+        })
+        
+    except Exception as e:
+        logger.error(f"Error en test histórico: {e}")
         return jsonify({
             "success": False,
-            "error": "Error interno del servidor",
-            "message": str(e) if config.DEBUG else "Ha ocurrido un error inesperado"
+            "error": str(e)
         }), 500
-    
-    # Manejador de errores 404
-    @app.errorhandler(404)
-    def not_found(e):
-        """Maneja rutas no encontradas"""
-        logger.warning(f"Ruta no encontrada: {request.path}")
-        return jsonify({
-            "success": False,
-            "error": "Ruta no encontrada",
-            "path": request.path
-        }), 404
-    
-    # Manejador de errores 405
-    @app.errorhandler(405)
-    def method_not_allowed(e):
-        """Maneja métodos HTTP no permitidos"""
-        logger.warning(f"Método no permitido: {request.method} en {request.path}")
-        return jsonify({
-            "success": False,
-            "error": "Método no permitido",
-            "method": request.method,
-            "path": request.path
-        }), 405
-    
-    # Manejador de errores 413 (Payload Too Large)
-    @app.errorhandler(413)
-    def payload_too_large(e):
-        """Maneja archivos demasiado grandes"""
-        logger.warning(f"Archivo demasiado grande enviado")
-        return jsonify({
-            "success": False,
-            "error": "Archivo demasiado grande",
-            "message": "El archivo excede el tamaño máximo permitido (16MB)"
-        }), 413
-    
-    logger.info("Aplicación Flask configurada exitosamente")
-    return app
 
-# Crear aplicación
-app = create_app()
+@app.route('/test/advanced-historico')
+def test_advanced_historico():
+    """Endpoint de prueba para el servicio avanzado"""
+    try:
+        from src.services.advanced_query_service import AdvancedQueryService
+        from src.repositories.pqrs_repository import PQRSRepository
+        
+        # Inicializar servicios
+        pqrs_repository = PQRSRepository()
+        advanced_service = AdvancedQueryService(pqrs_repository)
+        
+        # Probar consulta avanzada
+        filtros_test = {
+            "texto": "reparacion",
+            "limit": 10,
+            "ordenar_por": "fecha_radicacion",
+            "orden": "desc"
+        }
+        
+        resultado_avanzado = advanced_service.consulta_avanzada(filtros_test)
+        
+        # Probar sugerencias
+        sugerencias = advanced_service.obtener_sugerencias_busqueda("repar")
+        
+        return jsonify({
+            "success": True,
+            "consulta_avanzada": resultado_avanzado,
+            "sugerencias": sugerencias
+        })
+        
+    except Exception as e:
+        logger.error(f"Error en test avanzado: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
 
 if __name__ == '__main__':
-    try:
-        logger.info("Iniciando aplicación TUNRAG...")
-        app.run(debug=config.DEBUG, host='0.0.0.0', port=5000)
-        logger.info("Aplicación iniciada exitosamente en puerto 5000")
-    except Exception as e:
-        logger.error(f"Error al iniciar aplicación: {e}")
-        sys.exit(1)
+    logger.info("🚀 Iniciando aplicación SIF-GPT unificada...")
+    logger.info("📱 Frontend unificado disponible en: http://localhost:5000")
+    logger.info("🔌 API disponible en: http://localhost:5000/api")
+    logger.info("🧪 Tests disponibles en: http://localhost:5000/test")
+    app.run(debug=True, host='0.0.0.0', port=5000)
