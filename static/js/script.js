@@ -144,7 +144,7 @@ function ask() {
       chatContent.innerHTML += `
         <section class="message-bot">
             <div class="content-message">
-                <img src="https://i.ibb.co/17TbXB8/logo-tunja.png" alt="logo" />
+                <img src="/static/images/logo-medellin.png" alt="logo" />
                 <pre>${botResponseHtml}</pre>
             </div>
         </section>`;

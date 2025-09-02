@@ -12,7 +12,7 @@ Respuesta: Para liquidar el Impuesto Predial se requieren 2 variables: la base g
 
 - Preguntas relacionadas a dónde se puede obtener la factura del Impuesto Predial
 
-Respuesta: A través de la página web https://www.tunja-boyaca.gov.co/impuestos-846906/descargar-factura-online-impuesto-predial, puede seguir las instrucciones que verá en pantalla para descargar su factura del impuesto predial.
+Respuesta: A través de la página web https://www.medellin.gov.co/impuestos, puede seguir las instrucciones que verá en pantalla para descargar su factura del impuesto predial.
 
 - Preguntas relacionadas a en qué casos puede solicitar una Revisión de Avalúo
 

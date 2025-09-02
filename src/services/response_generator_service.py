@@ -180,7 +180,7 @@ class ResponseGeneratorService:
 2. **Asignación:** Tu petición será asignada a un funcionario específico que se encargará de darle seguimiento.
 3. **Respuesta:** Recibirás una respuesta oficial por parte de la Secretaría de Educación dentro del plazo estipulado por la normativa vigente.
 
-**Contacto Adicional:** Si tienes alguna pregunta adicional o necesitas más información, puedes ponerte en contacto con nosotros a través del correo electrónico [correo@tunja.gov.co] o llamando al [número de contacto].
+**Contacto Adicional:** Si tienes alguna pregunta adicional o necesitas más información, puedes ponerte en contacto con nosotros a través del correo electrónico [correo@medellin.gov.co] o llamando al [número de contacto].
 
 Agradecemos tu paciencia y comprensión mientras trabajamos para resolver tu petición."""
         
