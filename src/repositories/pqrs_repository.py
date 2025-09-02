@@ -12,9 +12,7 @@ class PQRSRepository:
         """Inicializa el repositorio"""
         self.historico_csv_path = config.HISTORICO_CSV
         self.historico_excel_path = config.HISTORICO_EXCEL
-        self.tabla_path = config.TABLA_CSV
         self._historico_df = None
-        self._tabla_df = None
         self._historico_source = None
     
     def _load_historico(self) -> pd.DataFrame:
@@ -131,16 +129,7 @@ class PQRSRepository:
             else:
                 logger.info("Todas las columnas requeridas están disponibles")
     
-    def _load_tabla(self) -> pd.DataFrame:
-        """Carga el archivo tabla en memoria"""
-        if self._tabla_df is None:
-            try:
-                self._tabla_df = pd.read_csv(self.tabla_path, sep=";")
-                logger.info(f"Archivo tabla cargado: {len(self._tabla_df)} registros")
-            except Exception as e:
-                logger.error(f"Error al cargar archivo tabla: {e}")
-                raise
-        return self._tabla_df
+
     
     def get_historico_by_radicado(self, numero_radicado: str) -> Optional[PQRSHistorico]:
         """Obtiene un registro histórico por número de radicado"""
@@ -315,7 +304,6 @@ class PQRSRepository:
     def refresh_cache(self):
         """Refresca la caché de datos"""
         self._historico_df = None
-        self._tabla_df = None
         logger.info("Caché de datos refrescada")
 
 class PromptRepository:

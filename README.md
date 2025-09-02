@@ -11,35 +11,59 @@ Sistema de Recuperación Aumentada de Información (RAG) especializado en la con
 - **Interfaz Web Moderna**: Frontend responsive y fácil de usar
 - **Logging Centralizado**: Sistema de logs robusto para monitoreo
 
-## 🏗️ Arquitectura del Sistema
+## 🏗️ Arquitectura del Sistema Optimizada
 
-```
-TUNRAG/
-├── src/                          # Código fuente principal
-│   ├── controllers/              # Controladores de API unificados
-│   │   ├── historico_controller.py    # Controlador unificado de histórico
-│   │   └── pqrs_controller.py         # Controlador de PQRS
-│   ├── services/                 # Servicios de negocio
-│   │   ├── historico_query_service.py # Servicio unificado de histórico
-│   │   ├── pqrs_orchestrator_service.py # Orquestador principal
-│   │   ├── audio_service.py      # Servicio de audio
-│   │   ├── pqrs_classifier_service.py # Clasificación de PQRS
-│   │   └── response_generator_service.py # Generación de respuestas
-│   ├── models/                   # Modelos de datos
-│   ├── repositories/             # Acceso a datos
-│   ├── utils/                    # Utilidades (logger, etc.)
-│   └── config/                   # Configuración del sistema
-├── templates/                    # Plantillas HTML
-├── static/                       # Archivos estáticos (CSS, JS, imágenes)
-├── input/                        # Datos de entrada
-│   ├── historico/               # Archivos de histórico de PQRS
-│   ├── prompts/                 # Prompts para IA
-│   └── plantillas_solucion/     # Plantillas de respuestas
-├── logs/                        # Archivos de log
-├── app.py                       # Aplicación principal Flask
+### Separación entre Arquitectura y Orquestación
 
-└── requirements.txt              # Dependencias de Python
+#### **Capa de Arquitectura (Estructura Base)**
 ```
+SIFGPT/
+├── src/                          # Código fuente principal (100% funcional)
+│   ├── controllers/              # Controladores REST por dominio
+│   │   ├── historico_controller.py    # Endpoints de consulta histórica
+│   │   └── pqrs_controller.py         # Endpoints de procesamiento PQRS
+│   ├── services/                 # Servicios de negocio especializados
+│   │   ├── audio_service.py           # Transcripción de audio
+│   │   ├── historico_query_service.py # Consultas inteligentes de histórico
+│   │   ├── pqrs_classifier_service.py # Clasificación automática de PQRS
+│   │   ├── response_generator_service.py # Generación de respuestas contextuales
+│   │   └── pqrs_orchestrator_service.py # ⭐ ORQUESTADOR PRINCIPAL
+│   ├── models/                   # Modelos de datos tipados
+│   │   └── pqrs_model.py              # PQRSData, PQRSHistorico, AudioTranscription
+│   ├── repositories/             # Acceso y gestión de datos
+│   │   └── pqrs_repository.py         # PQRSRepository, PromptRepository
+│   ├── utils/                    # Utilidades del sistema
+│   │   └── logger.py                  # Sistema de logging centralizado
+│   └── config/                   # Configuración centralizada
+│       └── config.py                  # Configuración unificada del sistema
+├── templates/                    # Frontend optimizado
+│   └── index.html                     # Interfaz web unificada
+├── static/                       # Archivos estáticos optimizados
+│   ├── css/styles.css                 # Estilos unificados y responsivos
+│   ├── js/sifgpt-unified.js          # JavaScript unificado (sin duplicados)
+│   └── images/logo-medellin.png       # Logo oficial
+├── input/                        # Datos de entrada (solo utilizados)
+│   ├── historico/                     # Archivos de histórico activos
+│   │   ├── historico.csv              # Histórico en formato CSV
+│   │   └── historico2.xlsx            # Histórico en formato Excel
+│   ├── prompts/                       # Prompts de IA (solo utilizados)
+│   │   ├── categorias.txt, entidades.txt, estructura_json.txt
+│   │   ├── faqs.txt, respuestas_faqs.txt
+│   │   └── sys_prompt.txt, sys_prompt_faqs.txt, sys_prompt_solucion.txt
+│   └── plantillas_solucion/           # Plantillas de respuesta
+│       └── plantilla.txt              # Plantilla base de respuestas
+├── logs/                         # Sistema de logging
+│   └── tunrag.log                     # Logs de la aplicación
+├── app.py                        # Aplicación principal Flask
+├── requirements.txt              # Dependencias optimizadas
+├── Dockerfile                    # Configuración Docker
+└── docker-compose.yml            # Orquestación de contenedores
+```
+
+#### **Capa de Orquestación (Flujo de Datos)**
+- **PQRSOrchestratorService**: Coordina todos los servicios especializados
+- **Controllers**: Enrutan requests HTTP a servicios apropiados
+- **Blueprints**: Organizan endpoints por funcionalidad (PQRS vs Histórico)
 
 ## 🔧 Instalación y Configuración
 
