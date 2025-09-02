@@ -18,16 +18,4 @@ Por ahora te podemos decir lo siguiente:
 
 Plantilla de solución de {clase} de la Secretaría de Infraestructura Física - Alcaldía de Medellín."
 
-De otra manera, responde que Noé estás capacitado para responder la pregunta, porque no tiene que ver con un PQRS.
-
----
-
-Para consultas sobre el estado de trámites históricos, utiliza esta plantilla adicional:
-
-"Estimado {nombre}, hoy {fecha} te informamos que:
-
-El estado de tu trámite es:
-
-{estado_radicado}
-
-Si necesitas más información o tienes alguna consulta adicional, no dudes en contactarnos."
+De otra manera, responde que no estás capacitado para responder la pregunta, porque no tiene que ver con un PQRS.

@@ -128,13 +128,20 @@ class ResponseGeneratorService:
             sys_prompt_solucion = self.prompt_repository.get_prompt('sys_prompt_solucion')
             faqs = self.prompt_repository.get_prompt('faqs')
             
-            # Formatear plantilla
-            formatted_plantilla = plantilla_hist.format(
-                nombre=pqrs_data.nombre,
-                fecha=fecha,
-                clase=pqrs_data.clase,
-                estado_radicado=f"Radicado: {historico.numero_radicado} - Estado: {historico.estado_pqrs}"
-            )
+            # Formatear plantilla - usar solo la parte de nueva PQRS
+            formatted_plantilla = f"""Estimado {pqrs_data.nombre}, hoy {fecha} te informamos que:
+
+Tu {pqrs_data.clase} ha sido enviada al área encargada en la {pqrs_data.entidad_responde}, y está siendo procesada en el sistema.
+
+Información del trámite:
+- Radicado: {historico.numero_radicado}
+- Estado actual: {historico.estado_pqrs}
+- Clasificación: {historico.clasificacion}
+
+Si necesitas más información, no dudes en contactarnos.
+
+Atentamente,
+Secretaría de Infraestructura Física - Alcaldía de Medellín."""
             
             # Formatear prompt de solución
             formatted_sys_prompt = sys_prompt_solucion.format(faqs=faqs)

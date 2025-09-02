@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 # Cargar variables de entorno
-load_dotenv()
+load_dotenv(override=True)
 
 class Config:
     """Configuración centralizada del proyecto TUNRAG"""
