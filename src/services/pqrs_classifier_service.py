@@ -135,3 +135,54 @@ class PQRSClassifierService:
             "tiene_radicado": bool(pqrs_data.radicado),
             "tiene_nombre": bool(pqrs_data.nombre)
         }
+    
+    def _create_default_pqrs_data(self, transcription: str) -> PQRSData:
+        """Crea datos de PQRS por defecto en caso de error"""
+        try:
+            # Intentar extraer información básica del texto
+            text_lower = transcription.lower()
+            
+            # Determinar clase por palabras clave
+            clase = "Petición"  # Por defecto
+            if any(word in text_lower for word in ["queja", "me quejo", "inconformidad"]):
+                clase = "Queja"
+            elif any(word in text_lower for word in ["reclamo", "reclamo por"]):
+                clase = "Reclamo"
+            elif any(word in text_lower for word in ["sugerencia", "sugiero", "recomiendo"]):
+                clase = "Sugerencia"
+            elif any(word in text_lower for word in ["denuncia", "denuncio"]):
+                clase = "Denuncia"
+            
+            # Determinar si es FAQ
+            es_faq = "No"
+            if any(word in text_lower for word in ["cómo", "cuándo", "dónde", "qué", "cuál", "información", "proceso"]):
+                es_faq = "Sí"
+            
+            # Crear datos por defecto
+            default_data = {
+                "nombre": "",
+                "telefono": "",
+                "cedula": "",
+                "clase": clase,
+                "explicacion": f"Clasificación automática basada en: {transcription[:100]}...",
+                "radicado": "",
+                "entidad_responde": "Secretaría de Infraestructura Física - Alcaldía de Medellín",
+                "es_faq": es_faq
+            }
+            
+            logger.info(f"Datos por defecto creados para PQRS: {clase}")
+            return PQRSData.from_dict(default_data)
+            
+        except Exception as e:
+            logger.error(f"Error al crear datos por defecto: {e}")
+            # Retornar datos mínimos en caso de error crítico
+            return PQRSData(
+                nombre="",
+                telefono="",
+                cedula="",
+                clase="Petición",
+                explicacion="Error en clasificación automática",
+                radicado="",
+                entidad_responde="Secretaría de Infraestructura Física - Alcaldía de Medellín",
+                es_faq="No"
+            )

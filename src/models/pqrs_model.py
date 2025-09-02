@@ -114,7 +114,7 @@ class AudioTranscription:
     """Modelo de datos para transcripción de audio"""
     audio_file: str
     transcription: str
-    timestamp: datetime
+    timestamp: datetime = None
     language: str = "es"
     
     def __post_init__(self):
@@ -123,7 +123,7 @@ class AudioTranscription:
             raise ValueError("Archivo de audio es requerido")
         if not self.transcription.strip():
             self.transcription = ""
-        if not self.timestamp:
+        if self.timestamp is None:
             self.timestamp = datetime.now()
         if not self.language.strip():
             self.language = "es"

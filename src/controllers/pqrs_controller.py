@@ -71,7 +71,7 @@ class PQRSController:
             if not self.orchestrator.audio_service.validate_audio_format(audio_file.filename):
                 return jsonify({
                     "success": False,
-                    "error": "Formato de audio no soportado"
+                    "error": f"Formato de audio no soportado. Formatos válidos: {', '.join(self.orchestrator.audio_service.get_supported_formats())}"
                 }), 400
             
             # Procesar PQRS desde audio
@@ -79,6 +79,7 @@ class PQRSController:
             
             if result["success"]:
                 return jsonify({
+                    "success": True,
                     "transcript": result["transcription"],
                     "pqrs_data": result["pqrs_data"],
                     "response": result["response"]
@@ -86,14 +87,14 @@ class PQRSController:
             else:
                 return jsonify({
                     "success": False,
-                    "error": result.get("error", "Error desconocido")
+                    "error": result.get("error", "Error desconocido en el procesamiento")
                 }), 500
                 
         except Exception as e:
             logger.error(f"Error en endpoint process_audio: {e}")
             return jsonify({
                 "success": False,
-                "error": "Error interno del servidor"
+                "error": "Error interno del servidor al procesar el audio"
             }), 500
     
     def transcribe_audio_only(self) -> Dict[str, Any]:

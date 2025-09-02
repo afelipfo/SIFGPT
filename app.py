@@ -24,6 +24,7 @@ def create_app():
     # Configuración de la aplicación
     app.config['SECRET_KEY'] = config.SECRET_KEY
     app.config['DEBUG'] = config.DEBUG
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
     
     # Validar configuración
     try:
@@ -129,6 +130,17 @@ def create_app():
             "method": request.method,
             "path": request.path
         }), 405
+    
+    # Manejador de errores 413 (Payload Too Large)
+    @app.errorhandler(413)
+    def payload_too_large(e):
+        """Maneja archivos demasiado grandes"""
+        logger.warning(f"Archivo demasiado grande enviado")
+        return jsonify({
+            "success": False,
+            "error": "Archivo demasiado grande",
+            "message": "El archivo excede el tamaño máximo permitido (16MB)"
+        }), 413
     
     logger.info("Aplicación Flask configurada exitosamente")
     return app

@@ -55,6 +55,9 @@ function sendAudioToServer(audioBlob) {
   const formData = new FormData();
   formData.append("audio", audioBlob, "recording.wav"); // Nombrar el archivo como .wav
 
+  // Mostrar indicador de carga
+  startLoader();
+
   axios
     .post("/process_audio", formData, {
       headers: {
@@ -62,19 +65,32 @@ function sendAudioToServer(audioBlob) {
       },
     })
     .then((response) => {
-      console.log("Respuesta del servidor:", response); // Verificar la respuesta completa en la consola
+      console.log("Respuesta del servidor:", response);
 
       const transcription = response.data.transcript;
-      console.log("Transcripción recibida:", transcription); // Verificar si la transcripción se está recibiendo
+      console.log("Transcripción recibida:", transcription);
 
-      if (transcription === null) {
-        console.error("La transcripción es null.");
+      if (transcription === null || transcription === undefined) {
+        console.error("La transcripción es null o undefined.");
+        alert("Error: No se pudo transcribir el audio. Por favor, intenta de nuevo.");
       } else {
         document.getElementById("input_question").value = transcription;
+        // Opcional: enviar automáticamente la transcripción
+        // ask();
       }
     })
     .catch((error) => {
       console.error("Error al enviar el audio:", error);
+      let errorMessage = "Error al procesar el audio.";
+      
+      if (error.response && error.response.data && error.response.data.error) {
+        errorMessage = error.response.data.error;
+      }
+      
+      alert(`Error: ${errorMessage}`);
+    })
+    .finally(() => {
+      stopLoader();
     });
 }
 
@@ -157,6 +173,26 @@ function ask() {
     })
     .catch((error) => {
       console.error("Error al obtener la respuesta:", error);
+      
+      // Mostrar mensaje de error más informativo
+      let errorMessage = "Lo sentimos, ha ocurrido un error al procesar tu solicitud.";
+      
+      if (error.response && error.response.data && error.response.data.error) {
+        errorMessage = error.response.data.error;
+      }
+      
+      chatContent.innerHTML += `
+        <section class="message-bot">
+            <div class="content-message">
+                <img src="/static/images/logo-medellin.png" alt="logo" />
+                <p style="color: #dc3545;"><strong>Error:</strong> ${errorMessage}</p>
+            </div>
+        </section>`;
+      
+      // Desplazar hacia abajo el chat
+      chatContent.scrollTop = chatContent.scrollHeight;
+      
+      // Ocultar el spinner de carga
       loader.classList.add("d-none");
       plane.classList.remove("d-none");
     });

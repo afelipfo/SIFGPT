@@ -120,13 +120,23 @@ class AudioService:
         """Transcribe un archivo de audio"""
         try:
             # Obtener nombre del archivo
-            if hasattr(audio_file, 'name'):
+            if hasattr(audio_file, 'filename'):
+                filename = audio_file.filename
+            elif hasattr(audio_file, 'name'):
                 filename = os.path.basename(audio_file.name)
             else:
                 filename = str(audio_file)
             
+            # Validar formato antes de transcribir
+            if not self.validate_audio_format(filename):
+                raise ValueError(f"Formato de audio no soportado: {filename}")
+            
             # Realizar transcripción
             transcription_text = self.strategy.transcribe(audio_file)
+            
+            # Validar que la transcripción no esté vacía
+            if not transcription_text or not transcription_text.strip():
+                raise ValueError("La transcripción resultó vacía")
             
             # Crear objeto de transcripción
             audio_transcription = AudioTranscription(
@@ -134,7 +144,7 @@ class AudioService:
                 transcription=transcription_text
             )
             
-            logger.info(f"Transcripción completada para: {filename}")
+            logger.info(f"Transcripción completada para: {filename} - {len(transcription_text)} caracteres")
             return audio_transcription
             
         except Exception as e:
