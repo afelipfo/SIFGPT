@@ -1,9 +1,18 @@
+#!/usr/bin/env python3
+"""
+Controlador unificado para el histórico de PQRS
+Combina funcionalidades básicas y avanzadas en un solo controlador
+"""
+
 from flask import Blueprint, request, jsonify
 from src.services.historico_query_service import HistoricoQueryService
 from src.repositories.pqrs_repository import PQRSRepository
 from src.utils.logger import logger
+import json
+import pandas as pd
+from datetime import datetime
 
-# Crear blueprint para consultas históricas
+# Crear blueprint para consultas históricas unificado
 historico_bp = Blueprint('historico', __name__)
 
 # Inicializar servicios
@@ -12,7 +21,7 @@ historico_service = HistoricoQueryService(pqrs_repository)
 
 @historico_bp.route('/consulta', methods=['POST'])
 def consultar_historico():
-    """Endpoint para consultas históricas"""
+    """Endpoint para consultas históricas unificado"""
     try:
         data = request.get_json()
         
@@ -116,26 +125,121 @@ def buscar_por_nombre():
             "mensaje": "Error interno del servidor"
         }), 500
 
-@historico_bp.route('/fechas', methods=['POST'])
-def consultar_por_fechas():
-    """Endpoint para consulta por rango de fechas"""
+@historico_bp.route('/consulta-avanzada', methods=['POST'])
+def consulta_avanzada():
+    """Endpoint para consultas avanzadas con múltiples filtros"""
     try:
         data = request.get_json()
-        
-        if not data or 'fecha_inicio' not in data or 'fecha_fin' not in data:
+        if not data:
             return jsonify({
                 "success": False,
-                "error": "Fechas requeridas",
-                "mensaje": "Se deben proporcionar 'fecha_inicio' y 'fecha_fin'"
+                "error": "Datos JSON requeridos",
+                "mensaje": "Debe enviar un JSON con los filtros de búsqueda"
             }), 400
         
-        fecha_inicio = data['fecha_inicio']
-        fecha_fin = data['fecha_fin']
-        resultado = historico_service.consultar_por_fechas(fecha_inicio, fecha_fin)
+        # Validar filtros básicos
+        filtros_validos = {
+            'texto', 'radicado', 'nombre', 'fecha_inicio', 'fecha_fin',
+            'clasificacion', 'estado', 'unidad', 'barrio', 'limit',
+            'ordenar_por', 'orden'
+        }
+        
+        filtros = {k: v for k, v in data.items() if k in filtros_validos and v}
+        
+        if not filtros:
+            return jsonify({
+                "success": False,
+                "error": "Filtros requeridos",
+                "mensaje": "Debe especificar al menos un filtro de búsqueda"
+            }), 400
+        
+        # Ejecutar consulta avanzada
+        resultado = historico_service.consulta_avanzada(filtros)
+        
         return jsonify(resultado)
         
     except Exception as e:
-        logger.error(f"Error en consulta por fechas: {e}")
+        logger.error(f"Error en consulta avanzada: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "mensaje": "Error interno del servidor"
+        }), 500
+
+@historico_bp.route('/sugerencias', methods=['POST'])
+def obtener_sugerencias():
+    """Endpoint para obtener sugerencias de búsqueda"""
+    try:
+        data = request.get_json()
+        if not data or 'texto' not in data:
+            return jsonify({
+                "success": False,
+                "error": "Texto requerido",
+                "mensaje": "Debe enviar un JSON con el campo 'texto'"
+            }), 400
+        
+        texto = data['texto']
+        if len(texto) < 2:
+            return jsonify({
+                "success": False,
+                "error": "Texto muy corto",
+                "mensaje": "El texto debe tener al menos 2 caracteres"
+            }), 400
+        
+        sugerencias = historico_service.obtener_sugerencias_busqueda(texto)
+        
+        return jsonify({
+            "success": True,
+            "texto_busqueda": texto,
+            "sugerencias": sugerencias,
+            "total_sugerencias": len(sugerencias)
+        })
+        
+    except Exception as e:
+        logger.error(f"Error al obtener sugerencias: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "mensaje": "Error interno del servidor"
+        }), 500
+
+@historico_bp.route('/filtros-disponibles', methods=['GET'])
+def obtener_filtros_disponibles():
+    """Endpoint para obtener información sobre filtros disponibles"""
+    try:
+        filtros_info = {
+            "filtros_texto": {
+                "texto": "Búsqueda en texto de la PQRS",
+                "nombre": "Nombre del solicitante",
+                "radicado": "Número de radicado"
+            },
+            "filtros_fecha": {
+                "fecha_inicio": "Fecha de inicio (YYYY-MM-DD)",
+                "fecha_fin": "Fecha de fin (YYYY-MM-DD)"
+            },
+            "filtros_clasificacion": {
+                "clasificacion": "Tipo de PQRS (Petición, Queja, Reclamo, Sugerencia, Denuncia)",
+                "estado": "Estado actual de la PQRS"
+            },
+            "filtros_ubicacion": {
+                "unidad": "Unidad responsable de la PQRS",
+                "barrio": "Barrio o sector de la PQRS"
+            },
+            "filtros_resultado": {
+                "limit": "Límite de resultados (número)",
+                "ordenar_por": "Campo para ordenar resultados",
+                "orden": "Orden de resultados ('asc' o 'desc')"
+            }
+        }
+        
+        return jsonify({
+            "success": True,
+            "filtros_disponibles": filtros_info,
+            "mensaje": "Información de filtros disponibles"
+        })
+        
+    except Exception as e:
+        logger.error(f"Error obteniendo filtros disponibles: {e}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -150,7 +254,7 @@ def obtener_estadisticas():
         return jsonify(resultado)
         
     except Exception as e:
-        logger.error(f"Error al obtener estadísticas: {e}")
+        logger.error(f"Error obteniendo estadísticas: {e}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -159,13 +263,13 @@ def obtener_estadisticas():
 
 @historico_bp.route('/ayuda', methods=['GET'])
 def obtener_ayuda():
-    """Endpoint para obtener ayuda sobre consultas disponibles"""
+    """Endpoint para obtener ayuda sobre el uso del servicio"""
     try:
         resultado = historico_service.obtener_ayuda_consultas()
         return jsonify(resultado)
         
     except Exception as e:
-        logger.error(f"Error al obtener ayuda: {e}")
+        logger.error(f"Error obteniendo ayuda: {e}")
         return jsonify({
             "success": False,
             "error": str(e),
@@ -174,13 +278,31 @@ def obtener_ayuda():
 
 @historico_bp.route('/resumen', methods=['GET'])
 def obtener_resumen():
-    """Endpoint para obtener resumen del histórico"""
+    """Endpoint para obtener un resumen rápido del histórico"""
     try:
-        resultado = historico_service.consultar_estadisticas()
-        return jsonify(resultado)
+        # Obtener estadísticas básicas
+        stats = historico_service.consultar_estadisticas()
         
+        if stats['success']:
+            datos = stats['datos']
+            resumen = {
+                "total_pqrs": datos.get('total_pqrs', 0),
+                "clasificaciones_principales": datos.get('por_clasificacion', {}),
+                "estados_principales": datos.get('por_estado', {}),
+                "unidades_principales": datos.get('por_unidad', {}),
+                "fecha_ultima_actualizacion": datetime.now().isoformat()
+            }
+            
+            return jsonify({
+                "success": True,
+                "resumen": resumen,
+                "mensaje": "Resumen del histórico generado exitosamente"
+            })
+        else:
+            return jsonify(stats)
+            
     except Exception as e:
-        logger.error(f"Error al obtener resumen: {e}")
+        logger.error(f"Error obteniendo resumen: {e}")
         return jsonify({
             "success": False,
             "error": str(e),

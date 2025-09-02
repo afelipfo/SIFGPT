@@ -1,11 +1,19 @@
-flask
-flask-cors
-python-dotenv
-openai
-requests
-pandas
-numpy
-python-multipart
-openpyxl
-gradio
-faster-whisper
+# Dependencias principales de TUNRAG
+flask>=3.0.0
+flask-cors>=4.0.0
+python-dotenv>=1.0.0
+
+# OpenAI y procesamiento de audio
+openai>=1.0.0
+python-multipart>=0.0.9
+
+# Procesamiento de datos
+pandas>=2.0.0
+numpy>=1.24.0
+openpyxl>=3.1.0
+
+# Procesamiento de audio (opcional)
+faster-whisper>=0.10.0
+
+# Utilidades
+requests>=2.31.0

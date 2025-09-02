@@ -1,19 +1,18 @@
 """
-Servicios de negocio del sistema TUNRAG
+Servicios del sistema TUNRAG
 """
 
-from .audio_service import AudioService, AudioServiceFactory, TranscriptionStrategy, OpenAIWhisperStrategy, FasterWhisperStrategy
-from .pqrs_classifier_service import PQRSClassifierService
-from .response_generator_service import ResponseGeneratorService
 from .pqrs_orchestrator_service import PQRSOrchestratorService
+from .historico_query_service import HistoricoQueryService
+from .pqrs_classifier_service import PQRSClassifierService
+from .audio_service import AudioService, AudioServiceFactory
+from .response_generator_service import ResponseGeneratorService
 
 __all__ = [
-    'AudioService', 
-    'AudioServiceFactory', 
-    'TranscriptionStrategy', 
-    'OpenAIWhisperStrategy', 
-    'FasterWhisperStrategy',
-    'PQRSClassifierService',
-    'ResponseGeneratorService',
-    'PQRSOrchestratorService'
+    'PQRSOrchestratorService',
+    'HistoricoQueryService',
+    'PQRSClassifierService', 
+    'AudioService',
+    'AudioServiceFactory',
+    'ResponseGeneratorService'
 ]

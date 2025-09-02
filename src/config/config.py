@@ -44,10 +44,9 @@ class Config:
         'entidades': PROMPTS_DIR / 'entidades.txt'
     }
     
-    # Configuración de plantillas
+    # Configuración de plantillas (unificada)
     PLANTILLA_FILES = {
-        'plantilla': PLANTILLAS_DIR / 'plantilla.txt',
-        'plantilla_hist': PLANTILLAS_DIR / 'plantilla_hist.txt'
+        'plantilla': PLANTILLAS_DIR / 'plantilla.txt'
     }
     
     # Configuración de audio

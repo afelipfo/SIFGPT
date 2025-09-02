@@ -1,15 +1,24 @@
+#!/usr/bin/env python3
+"""
+Servicio unificado de consultas para el histórico de PQRS
+Combina funcionalidades básicas y avanzadas en un solo servicio
+"""
+
 from typing import List, Dict, Any, Optional
+from datetime import datetime, timedelta
+import re
+import pandas as pd
 from src.repositories.pqrs_repository import PQRSRepository
 from src.models.pqrs_model import PQRSHistorico
 from src.utils.logger import logger
 
 class HistoricoQueryService:
-    """Servicio especializado en consultas del histórico de PQRS"""
+    """Servicio unificado de consultas del histórico de PQRS con funcionalidades avanzadas"""
     
     def __init__(self, pqrs_repository: PQRSRepository):
-        """Inicializa el servicio de consultas históricas"""
+        """Inicializa el servicio de consultas históricas unificado"""
         self.pqrs_repository = pqrs_repository
-        logger.info("Servicio de consultas históricas inicializado")
+        logger.info("Servicio unificado de consultas históricas inicializado")
     
     def consultar_por_radicado(self, numero_radicado: str) -> Dict[str, Any]:
         """Consulta información de una PQRS por número de radicado"""
@@ -102,134 +111,259 @@ class HistoricoQueryService:
                 "mensaje": "Error al realizar la búsqueda"
             }
     
-    def consultar_estadisticas(self) -> Dict[str, Any]:
-        """Obtiene estadísticas generales del histórico"""
+    def consulta_avanzada(self, filtros: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Consulta avanzada con múltiples filtros personalizables
+        
+        Args:
+            filtros: Diccionario con filtros como:
+                - texto: str - Búsqueda en texto
+                - radicado: str - Número de radicado específico
+                - nombre: str - Nombre del solicitante
+                - fecha_inicio: str - Fecha de inicio (YYYY-MM-DD)
+                - fecha_fin: str - Fecha de fin (YYYY-MM-DD)
+                - clasificacion: str - Tipo de clasificación
+                - estado: str - Estado de la PQRS
+                - unidad: str - Unidad responsable
+                - barrio: str - Barrio o sector
+                - limit: int - Límite de resultados
+                - ordenar_por: str - Campo para ordenar
+                - orden: str - 'asc' o 'desc'
+        """
         try:
-            summary = self.pqrs_repository.get_historico_summary()
-            stats = self.pqrs_repository.get_estadisticas()
+            df = self.pqrs_repository._load_historico()
+            resultado = df.copy()
             
-            # Combinar información
-            resultado = {
+            # Aplicar filtros secuencialmente
+            if 'texto' in filtros and filtros['texto']:
+                resultado = self._filtrar_por_texto(resultado, filtros['texto'])
+            
+            if 'radicado' in filtros and filtros['radicado']:
+                resultado = self._filtrar_por_radicado(resultado, filtros['radicado'])
+            
+            if 'nombre' in filtros and filtros['nombre']:
+                resultado = self._filtrar_por_nombre(resultado, filtros['nombre'])
+            
+            if 'fecha_inicio' in filtros and filtros['fecha_inicio']:
+                resultado = self._filtrar_por_fecha(resultado, filtros['fecha_inicio'], filtros.get('fecha_fin'))
+            
+            if 'clasificacion' in filtros and filtros['clasificacion']:
+                resultado = self._filtrar_por_clasificacion(resultado, filtros['clasificacion'])
+            
+            if 'estado' in filtros and filtros['estado']:
+                resultado = self._filtrar_por_estado(resultado, filtros['estado'])
+            
+            if 'unidad' in filtros and filtros['unidad']:
+                resultado = self._filtrar_por_unidad(resultado, filtros['unidad'])
+            
+            if 'barrio' in filtros and filtros['barrio']:
+                resultado = self._filtrar_por_barrio(resultado, filtros['barrio'])
+            
+            # Ordenar resultados
+            if 'ordenar_por' in filtros and filtros['ordenar_por']:
+                resultado = self._ordenar_resultados(resultado, filtros['ordenar_por'], filtros.get('orden', 'asc'))
+            
+            # Limitar resultados
+            limit = filtros.get('limit', 100)
+            if limit > 0:
+                resultado = resultado.head(limit)
+            
+            # Convertir a objetos PQRSHistorico
+            registros = [PQRSHistorico.from_dict(row.to_dict()) for _, row in resultado.iterrows()]
+            
+            return {
+                "success": True,
+                "total_resultados": len(registros),
+                "filtros_aplicados": filtros,
+                "datos": [reg.to_dict() for reg in registros],
+                "resumen": self._generar_resumen_filtrado(resultado)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error en consulta avanzada: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "mensaje": "Error al procesar consulta avanzada"
+            }
+    
+    def obtener_sugerencias_busqueda(self, texto: str) -> List[str]:
+        """Obtiene sugerencias de búsqueda basadas en el texto ingresado"""
+        try:
+            df = self.pqrs_repository._load_historico()
+            
+            # Buscar en múltiples columnas
+            columnas_busqueda = ['texto', 'nombre', 'clasificacion', 'unidad', 'barrio']
+            sugerencias = set()
+            
+            for columna in columnas_busqueda:
+                if columna in df.columns:
+                    # Filtrar valores que contengan el texto
+                    valores = df[columna].dropna().astype(str)
+                    coincidencias = valores[valores.str.contains(texto, case=False, na=False)]
+                    
+                    # Agregar hasta 5 sugerencias por columna
+                    sugerencias.update(coincidencias.head(5).tolist())
+            
+            # Convertir a lista y limitar resultados
+            sugerencias_lista = list(sugerencias)[:20]
+            logger.info(f"Sugerencias generadas para '{texto}': {len(sugerencias_lista)}")
+            
+            return sugerencias_lista
+            
+        except Exception as e:
+            logger.error(f"Error generando sugerencias para '{texto}': {e}")
+            return []
+    
+    def consultar_estadisticas(self) -> Dict[str, Any]:
+        """Consulta estadísticas generales del histórico"""
+        try:
+            df = self.pqrs_repository._load_historico()
+            
+            estadisticas = {
+                "total_pqrs": len(df),
+                "por_clasificacion": df['clasificacion'].value_counts().to_dict(),
+                "por_estado": df['estado'].value_counts().to_dict(),
+                "por_unidad": df['unidad'].value_counts().head(10).to_dict(),
+                "por_barrio": df['barrio'].value_counts().head(10).to_dict(),
+                "fecha_mas_antigua": df['fecha_radicacion'].min() if 'fecha_radicacion' in df.columns else None,
+                "fecha_mas_reciente": df['fecha_radicacion'].max() if 'fecha_radicacion' in df.columns else None
+            }
+            
+            return {
                 "success": True,
                 "tipo_consulta": "estadisticas",
-                "resumen": summary,
-                "estadisticas": stats,
-                "mensaje": "Estadísticas del histórico obtenidas exitosamente"
+                "datos": estadisticas,
+                "mensaje": "Estadísticas generadas exitosamente"
             }
             
-            return resultado
-            
         except Exception as e:
-            logger.error(f"Error al obtener estadísticas: {e}")
+            logger.error(f"Error consultando estadísticas: {e}")
             return {
                 "success": False,
                 "tipo_consulta": "estadisticas",
                 "error": str(e),
-                "mensaje": "Error al obtener estadísticas"
+                "mensaje": "Error al generar estadísticas"
             }
     
-    def consultar_por_fechas(self, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
-        """Consulta PQRS en un rango de fechas"""
-        try:
-            resultados = self.pqrs_repository.get_historico_by_date_range(fecha_inicio, fecha_fin)
-            
-            if resultados:
-                return {
-                    "success": True,
-                    "tipo_consulta": "por_fechas",
-                    "fecha_inicio": fecha_inicio,
-                    "fecha_fin": fecha_fin,
-                    "total_resultados": len(resultados),
-                    "datos": [h.to_dict() for h in resultados],
-                    "mensaje": f"Se encontraron {len(resultados)} PQRS entre {fecha_inicio} y {fecha_fin}"
-                }
-            else:
-                return {
-                    "success": False,
-                    "tipo_consulta": "por_fechas",
-                    "fecha_inicio": fecha_inicio,
-                    "fecha_fin": fecha_fin,
-                    "total_resultados": 0,
-                    "datos": [],
-                    "mensaje": f"No se encontraron PQRS entre {fecha_inicio} y {fecha_fin}"
-                }
-                
-        except Exception as e:
-            logger.error(f"Error al consultar por fechas {fecha_inicio}-{fecha_fin}: {e}")
-            return {
-                "success": False,
-                "tipo_consulta": "por_fechas",
-                "error": str(e),
-                "mensaje": "Error al realizar la consulta por fechas"
+    def obtener_ayuda_consultas(self) -> Dict[str, Any]:
+        """Proporciona ayuda sobre cómo usar el servicio"""
+        ayuda = {
+            "consulta_basica": {
+                "descripcion": "Consulta simple por texto, nombre o radicado",
+                "ejemplo": "Buscar PQRS relacionadas con 'reparación'"
+            },
+            "consulta_avanzada": {
+                "descripcion": "Consulta con múltiples filtros y opciones de ordenamiento",
+                "filtros_disponibles": [
+                    "texto", "radicado", "nombre", "fecha_inicio", "fecha_fin",
+                    "clasificacion", "estado", "unidad", "barrio", "limit",
+                    "ordenar_por", "orden"
+                ]
+            },
+            "estadisticas": {
+                "descripcion": "Obtener estadísticas generales del histórico"
             }
+        }
+        
+        return {
+            "success": True,
+            "tipo_consulta": "ayuda",
+            "datos": ayuda,
+            "mensaje": "Información de ayuda disponible"
+        }
     
-    def consulta_inteligente(self, consulta_usuario: str) -> Dict[str, Any]:
-        """Realiza una consulta inteligente basada en el texto del usuario"""
+    def consulta_inteligente(self, consulta: str) -> Dict[str, Any]:
+        """Consulta inteligente que determina automáticamente el tipo de búsqueda"""
         try:
-            consulta_lower = consulta_usuario.lower()
+            consulta_lower = consulta.lower().strip()
             
             # Detectar tipo de consulta
-            if any(palabra in consulta_lower for palabra in ['radicado', 'número', 'numero', 'código', 'codigo']):
-                # Buscar número de radicado
-                import re
-                numeros = re.findall(r'\d+', consulta_usuario)
-                if numeros:
-                    return self.consultar_por_radicado(numeros[0])
-                else:
-                    return {
-                        "success": False,
-                        "tipo_consulta": "inteligente",
-                        "mensaje": "Por favor, proporciona el número de radicado que deseas consultar"
-                    }
-            
-            elif any(palabra in consulta_lower for palabra in ['estadísticas', 'estadisticas', 'resumen', 'total', 'cantidad']):
+            if consulta_lower in ['estadisticas', 'estadísticas', 'stats', 'resumen']:
                 return self.consultar_estadisticas()
-            
-            elif any(palabra in consulta_lower for palabra in ['fecha', 'periodo', 'desde', 'hasta']):
-                # Intentar extraer fechas
-                import re
-                fechas = re.findall(r'\d{1,2}[/-]\d{1,2}[/-]\d{2,4}', consulta_usuario)
-                if len(fechas) >= 2:
-                    return self.consultar_por_fechas(fechas[0], fechas[1])
-                else:
-                    return {
-                        "success": False,
-                        "tipo_consulta": "inteligente",
-                        "mensaje": "Por favor, especifica el rango de fechas (formato: DD/MM/YYYY)"
-                    }
-            
+            elif consulta_lower in ['ayuda', 'help', 'como usar', 'instrucciones']:
+                return self.obtener_ayuda_consultas()
+            elif consulta_lower.isdigit() or consulta_lower.replace('-', '').isdigit():
+                # Probablemente es un radicado
+                return self.consultar_por_radicado(consulta_lower)
+            elif len(consulta_lower) <= 50:
+                # Probablemente es un nombre
+                return self.buscar_por_nombre(consulta_lower)
             else:
-                # Búsqueda por texto general
-                return self.buscar_por_texto(consulta_usuario)
+                # Probablemente es una descripción o texto
+                return self.buscar_por_texto(consulta_lower)
                 
         except Exception as e:
             logger.error(f"Error en consulta inteligente: {e}")
             return {
                 "success": False,
-                "tipo_consulta": "inteligente",
                 "error": str(e),
-                "mensaje": "Error al procesar la consulta inteligente"
+                "mensaje": "Error al procesar consulta inteligente"
             }
     
-    def obtener_ayuda_consultas(self) -> Dict[str, Any]:
-        """Proporciona ayuda sobre los tipos de consultas disponibles"""
-        return {
-            "success": True,
-            "tipo_consulta": "ayuda",
-            "consultas_disponibles": {
-                "por_radicado": "Consulta una PQRS específica por número de radicado",
-                "por_texto": "Busca PQRS que contengan ciertas palabras en su descripción",
-                "por_nombre": "Busca PQRS por nombre del solicitante",
-                "por_fechas": "Consulta PQRS en un rango de fechas específico",
-                "estadisticas": "Obtiene estadísticas generales del histórico",
-                "inteligente": "Análisis automático del tipo de consulta basado en el texto"
-            },
-            "ejemplos": {
-                "por_radicado": "Consulta el radicado 2024-001",
-                "por_texto": "Busca PQRS sobre educación",
-                "por_nombre": "Busca PQRS de Juan Pérez",
-                "por_fechas": "PQRS entre 01/01/2024 y 31/12/2024",
-                "estadisticas": "Muestra estadísticas del histórico"
-            },
-            "mensaje": "Estas son las consultas disponibles en el sistema histórico"
-        }
+    # Métodos privados para filtros avanzados
+    def _filtrar_por_texto(self, df, texto: str):
+        """Filtra por texto en múltiples columnas"""
+        texto_lower = texto.lower()
+        mascara = df.astype(str).apply(lambda x: x.str.contains(texto_lower, case=False, na=False)).any(axis=1)
+        return df[mascara]
+    
+    def _filtrar_por_radicado(self, df, radicado: str):
+        """Filtra por número de radicado"""
+        return df[df['radicado'].astype(str).str.contains(radicado, case=False, na=False)]
+    
+    def _filtrar_por_nombre(self, df, nombre: str):
+        """Filtra por nombre del solicitante"""
+        return df[df['nombre'].astype(str).str.contains(nombre, case=False, na=False)]
+    
+    def _filtrar_por_fecha(self, df, fecha_inicio: str, fecha_fin: str = None):
+        """Filtra por rango de fechas"""
+        try:
+            fecha_inicio = pd.to_datetime(fecha_inicio)
+            if fecha_fin:
+                fecha_fin = pd.to_datetime(fecha_fin)
+                return df[(df['fecha_radicacion'] >= fecha_inicio) & (df['fecha_radicacion'] <= fecha_fin)]
+            else:
+                return df[df['fecha_radicacion'] >= fecha_inicio]
+        except:
+            return df
+    
+    def _filtrar_por_clasificacion(self, df, clasificacion: str):
+        """Filtra por clasificación de PQRS"""
+        return df[df['clasificacion'].astype(str).str.contains(clasificacion, case=False, na=False)]
+    
+    def _filtrar_por_estado(self, df, estado: str):
+        """Filtra por estado de la PQRS"""
+        return df[df['estado'].astype(str).str.contains(estado, case=False, na=False)]
+    
+    def _filtrar_por_unidad(self, df, unidad: str):
+        """Filtra por unidad responsable"""
+        return df[df['unidad'].astype(str).str.contains(unidad, case=False, na=False)]
+    
+    def _filtrar_por_barrio(self, df, barrio: str):
+        """Filtra por barrio o sector"""
+        return df[df['barrio'].astype(str).str.contains(barrio, case=False, na=False)]
+    
+    def _ordenar_resultados(self, df, campo: str, orden: str = 'asc'):
+        """Ordena los resultados por un campo específico"""
+        try:
+            if campo in df.columns:
+                if orden.lower() == 'desc':
+                    return df.sort_values(by=campo, ascending=False)
+                else:
+                    return df.sort_values(by=campo, ascending=True)
+            return df
+        except:
+            return df
+    
+    def _generar_resumen_filtrado(self, df) -> Dict[str, Any]:
+        """Genera un resumen de los resultados filtrados"""
+        try:
+            return {
+                "total_filtrado": len(df),
+                "clasificaciones": df['clasificacion'].value_counts().head(5).to_dict(),
+                "estados": df['estado'].value_counts().head(5).to_dict(),
+                "unidades": df['unidad'].value_counts().head(5).to_dict()
+            }
+        except:
+            return {"total_filtrado": len(df)}

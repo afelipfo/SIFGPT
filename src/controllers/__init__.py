@@ -1,10 +1,11 @@
 """
-Controladores de API del sistema SIFGPT
-
-Este módulo contiene los controladores que manejan las solicitudes HTTP
-y coordinan la lógica de negocio para el sistema de PQRS.
+Controladores del sistema TUNRAG
 """
 
-from .pqrs_controller import PQRSController, HealthController
+from .historico_controller import historico_bp
+from .pqrs_controller import pqrs_bp
 
-__all__ = ['PQRSController', 'HealthController']
+__all__ = [
+    'historico_bp',
+    'pqrs_bp'
+]

@@ -7,7 +7,6 @@ from flask import Flask, render_template, request, jsonify
 from src.services.pqrs_orchestrator_service import PQRSOrchestratorService
 from src.services.audio_service import AudioServiceFactory
 from src.controllers.historico_controller import historico_bp
-from src.controllers.advanced_historico_controller import advanced_historico_bp
 from src.controllers.pqrs_controller import pqrs_bp
 from src.utils.logger import logger
 import os
@@ -20,7 +19,6 @@ app.secret_key = os.environ.get('SECRET_KEY', 'sif-gpt-secret-key-2024')
 
 # Registrar blueprints
 app.register_blueprint(historico_bp, url_prefix='/api/historico')
-app.register_blueprint(advanced_historico_bp, url_prefix='/api/advanced-historico')
 app.register_blueprint(pqrs_bp, url_prefix='/api/pqrs')
 
 # Inicializar servicios con API key por defecto para pruebas
@@ -48,8 +46,7 @@ def health_check():
         "service": "SIF-GPT PQRS System",
         "version": "2.0.0",
         "features": {
-            "historico": "✅ Disponible",
-            "advanced_historico": "✅ Disponible",
+            "historico": "✅ Disponible (Unificado)",
             "pqrs_orchestrator": "✅ Disponible" if pqrs_orchestrator else "❌ No disponible",
             "audio_service": "✅ Disponible" if audio_service else "❌ No disponible"
         }
@@ -57,7 +54,7 @@ def health_check():
 
 @app.route('/test/historico')
 def test_historico():
-    """Endpoint de prueba para el servicio histórico"""
+    """Endpoint de prueba para el servicio histórico unificado"""
     try:
         if not pqrs_orchestrator:
             return jsonify({
@@ -67,14 +64,26 @@ def test_historico():
         
         # Probar consulta por radicado
         radicado_test = "202510292021"
-        resultado_radicado = pqrs_orchestrator.historico_service.buscar_por_radicado(radicado_test)
+        resultado_radicado = pqrs_orchestrator.historico_service.consultar_por_radicado(radicado_test)
         
         # Probar consulta por texto
         texto_test = "reparacion"
         resultado_texto = pqrs_orchestrator.historico_service.buscar_por_texto(texto_test)
         
         # Probar estadísticas
-        estadisticas = pqrs_orchestrator.historico_service.obtener_estadisticas()
+        estadisticas = pqrs_orchestrator.historico_service.consultar_estadisticas()
+        
+        # Probar consulta avanzada
+        filtros_test = {
+            "texto": "reparacion",
+            "limit": 10,
+            "ordenar_por": "fecha_radicacion",
+            "orden": "desc"
+        }
+        resultado_avanzado = pqrs_orchestrator.historico_service.consulta_avanzada(filtros_test)
+        
+        # Probar sugerencias
+        sugerencias = pqrs_orchestrator.historico_service.obtener_sugerencias_busqueda("repar")
         
         return jsonify({
             "success": True,
@@ -86,7 +95,9 @@ def test_historico():
                 "texto": texto_test,
                 "resultado": resultado_texto
             },
-            "estadisticas": estadisticas
+            "estadisticas": estadisticas,
+            "test_avanzado": resultado_avanzado,
+            "sugerencias": sugerencias
         })
         
     except Exception as e:
@@ -98,14 +109,13 @@ def test_historico():
 
 @app.route('/test/advanced-historico')
 def test_advanced_historico():
-    """Endpoint de prueba para el servicio avanzado"""
+    """Endpoint de prueba para funcionalidades avanzadas del histórico unificado"""
     try:
-        from src.services.advanced_query_service import AdvancedQueryService
-        from src.repositories.pqrs_repository import PQRSRepository
-        
-        # Inicializar servicios
-        pqrs_repository = PQRSRepository()
-        advanced_service = AdvancedQueryService(pqrs_repository)
+        if not pqrs_orchestrator:
+            return jsonify({
+                "success": False,
+                "error": "Servicio de orquestación no disponible"
+            }), 503
         
         # Probar consulta avanzada
         filtros_test = {
@@ -115,15 +125,22 @@ def test_advanced_historico():
             "orden": "desc"
         }
         
-        resultado_avanzado = advanced_service.consulta_avanzada(filtros_test)
+        resultado_avanzado = pqrs_orchestrator.historico_service.consulta_avanzada(filtros_test)
         
         # Probar sugerencias
-        sugerencias = advanced_service.obtener_sugerencias_busqueda("repar")
+        sugerencias = pqrs_orchestrator.historico_service.obtener_sugerencias_busqueda("repar")
+        
+        # Probar filtros disponibles
+        from src.controllers.historico_controller import historico_bp
+        with app.test_client() as client:
+            response = client.get('/api/historico/filtros-disponibles')
+            filtros_disponibles = response.get_json()
         
         return jsonify({
             "success": True,
             "consulta_avanzada": resultado_avanzado,
-            "sugerencias": sugerencias
+            "sugerencias": sugerencias,
+            "filtros_disponibles": filtros_disponibles
         })
         
     except Exception as e:
