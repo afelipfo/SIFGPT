@@ -87,17 +87,61 @@ class PQRSClassifierService:
             # Parsear JSON
             json_data = json.loads(cleaned_response)
             
-            # Validar estructura del JSON con todos los campos del modelo
-            all_fields = ['nombre', 'telefono', 'cedula', 'clase', 'explicacion', 'radicado', 'entidad_responde', 'es_faq', 'barrio', 'tipo_solicitud', 'tema_principal']
-            for field in all_fields:
-                if field not in json_data:
-                    json_data[field] = ""
+            # Asegurar que todos los campos requeridos estén presentes con valores por defecto
+            default_values = {
+                'nombre': "",
+                'telefono': "",
+                'cedula': "",
+                'clase': "SOLICITUD-INTERÉS PARTICULAR",
+                'explicacion': "",
+                'radicado': "",
+                'entidad_responde': "Secretaría de Infraestructura Física",
+                'es_faq': "No",
+                'barrio': "",
+                'tipo_solicitud': "",
+                'tema_principal': ""
+            }
             
-            # Crear y retornar modelo de datos
+            # Completar campos faltantes con valores por defecto
+            for field, default_value in default_values.items():
+                if field not in json_data or json_data[field] is None:
+                    json_data[field] = default_value
+            
+            # Crear y retornar modelo de datos usando from_dict
             return PQRSData.from_dict(json_data)
             
         except json.JSONDecodeError as e:
             logger.error(f"Error al parsear JSON de clasificación: {e}")
+            # Retornar modelo con valores por defecto en caso de error
+            return PQRSData(
+                nombre="",
+                telefono="",
+                cedula="",
+                clase="SOLICITUD-INTERÉS PARTICULAR",
+                explicacion="Error en clasificación automática",
+                radicado="",
+                entidad_responde="Secretaría de Infraestructura Física",
+                es_faq="No",
+                barrio="",
+                tipo_solicitud="SOLICITUD-INTERÉS PARTICULAR",
+                tema_principal="Infraestructura física"
+            )
+        except Exception as e:
+            logger.error(f"Error inesperado al procesar clasificación: {e}")
+            # Retornar modelo con valores por defecto
+            return PQRSData(
+                nombre="",
+                telefono="",
+                cedula="",
+                clase="SOLICITUD-INTERÉS PARTICULAR",
+                explicacion="Error en procesamiento",
+                radicado="",
+                entidad_responde="Secretaría de Infraestructura Física",
+                es_faq="No",
+                barrio="",
+                tipo_solicitud="SOLICITUD-INTERÉS PARTICULAR",
+                tema_principal="Infraestructura física"
+            )
             raise ValueError(f"Respuesta de clasificación no es un JSON válido: {e}")
         except Exception as e:
             logger.error(f"Error al procesar respuesta de clasificación: {e}")

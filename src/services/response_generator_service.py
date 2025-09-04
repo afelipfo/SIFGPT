@@ -18,36 +18,23 @@ class ResponseGeneratorService:
         logger.info("Servicio de generación de respuestas inicializado")
     
     def generate_response(self, pqrs_data: PQRSData, transcription: str) -> str:
-        """Genera una respuesta apropiada para la PQRS de forma simplificada"""
+        """Genera una respuesta apropiada para la PQRS usando IA"""
         try:
             fecha = datetime.now().strftime("%d/%m/%Y")
-            nombre = pqrs_data.nombre or "Ciudadano/a"
-            clase = pqrs_data.clase or "solicitud"
-            entidad = pqrs_data.entidad_responde or "Secretaría de Infraestructura Física"
             
-            # Respuesta directa sin complicaciones
-            respuesta = f"""¡Hola {nombre}!
-
-Hemos recibido tu {clase} el día {fecha}.
-
-📋 Información de tu solicitud:
-• Clasificación: {clase}
-• Unidad responsable: {entidad}
-• Estado: En proceso
-
-Tu solicitud será atendida según los tiempos establecidos. Te contactaremos si necesitamos información adicional.
-
-¡Gracias por contactar la Secretaría de Infraestructura Física!
-
-Atentamente,
-Alcaldía de Medellín"""
-
-            logger.info(f"Respuesta generada exitosamente para {clase}")
-            return respuesta
+            # Generar respuesta conversacional usando IA (mantener compatibilidad)
+            fake_context = {
+                'messages': [{'role': 'user', 'content': transcription}],
+                'classification_history': [],
+                'current_topic': pqrs_data.tema_principal
+            }
+            return self.generate_conversational_response(pqrs_data, transcription, fake_context)
                 
         except Exception as e:
             logger.error(f"Error al generar respuesta: {e}")
-            return f"Estimado/a {pqrs_data.nombre or 'Ciudadano/a'}, hemos recibido tu solicitud y será procesada. Gracias por contactarnos."
+            # Fallback a respuesta básica
+            nombre = pqrs_data.nombre or "Ciudadano/a"
+            return f"Estimado/a {nombre}, hemos recibido tu solicitud y será procesada. Gracias por contactarnos."
     
     def _generate_faq_response(self, pqrs_data: PQRSData, transcription: str) -> str:
         """Genera respuesta para preguntas frecuentes"""
@@ -94,6 +81,86 @@ Alcaldía de Medellín"""
             logger.error(f"Error al generar respuesta estándar: {e}")
             raise
     
+    def generate_conversational_response(self, pqrs_data: PQRSData, current_message: str, conversation_context: Dict[str, Any]) -> str:
+        """Genera una respuesta conversacional inteligente con contexto completo"""
+        try:
+            # Cargar prompt conversacional avanzado
+            try:
+                with open('input/prompts/sys_prompt_conversacional.txt', 'r', encoding='utf-8') as f:
+                    conversational_prompt = f.read()
+            except:
+                conversational_prompt = self._get_fallback_conversational_prompt()
+            
+            # Construir historial de conversación
+            conversation_history = self._build_conversation_history(conversation_context)
+            
+            # Crear contexto específico para el mensaje actual
+            context_info = f"""
+CONTEXTO DE LA CONVERSACIÓN:
+{conversation_history}
+
+INFORMACIÓN ACTUAL:
+- Clasificación: {pqrs_data.clase or 'Conversación'}
+- Tema principal: {pqrs_data.tema_principal or 'General'}
+- Barrio: {pqrs_data.barrio or 'No especificado'}
+
+MENSAJE ACTUAL DEL CIUDADANO: "{current_message}"
+
+INSTRUCCIÓN: Responde manteniendo la coherencia con toda la conversación anterior. Si el ciudadano se refiere a algo mencionado antes, haz referencia específica a ello."""
+
+            # Crear mensajes para OpenAI
+            messages = [
+                {"role": "system", "content": conversational_prompt},
+                {"role": "user", "content": context_info}
+            ]
+            
+            # Realizar llamada a OpenAI con parámetros optimizados
+            response = self.openai_client.chat.completions.create(
+                messages=messages,
+                model=self.model,
+                temperature=0.9,  # Más creatividad para conversaciones naturales
+                max_tokens=250,   # Respuestas concisas pero completas
+                presence_penalty=0.6,
+                frequency_penalty=0.4
+            )
+            
+            response_content = response.choices[0].message.content.strip()
+            logger.info("Respuesta conversacional inteligente generada exitosamente")
+            return response_content
+            
+        except Exception as e:
+            logger.error(f"Error al generar respuesta conversacional: {e}")
+            # Fallback a respuesta contextual básica
+            return self._generate_basic_contextual_response(current_message, conversation_context)
+
+    def _build_conversation_history(self, context: Dict[str, Any]) -> str:
+        """Construye un resumen del historial de conversación"""
+        messages = context.get('messages', [])
+        if not messages or len(messages) <= 1:
+            return "Esta es la primera interacción del ciudadano."
+        
+        # Tomar últimos 6 mensajes para mantener contexto sin sobrecargar
+        recent_messages = messages[-6:]
+        history_lines = []
+        
+        for msg in recent_messages:
+            role = "Ciudadano" if msg['role'] == 'user' else "SIF-GPT"
+            content = msg['content'][:100] + "..." if len(msg['content']) > 100 else msg['content']
+            history_lines.append(f"{role}: {content}")
+        
+        return "\n".join(history_lines)
+
+    def _get_fallback_conversational_prompt(self) -> str:
+        """Prompt de respaldo si no se puede cargar el archivo"""
+        return """Eres SIF-GPT, asistente inteligente de la Alcaldía de Medellín. Mantén el contexto de toda la conversación, haz referencias específicas a mensajes anteriores cuando sea relevante, y responde de manera natural y útil. Sé conciso pero completo."""
+
+    def _generate_basic_contextual_response(self, current_message: str, context: Dict[str, Any]) -> str:
+        """Genera respuesta básica con contexto"""
+        if len(context.get('messages', [])) <= 1:
+            return "¡Hola! Soy SIF-GPT, tu asistente para temas de infraestructura física. ¿En qué puedo ayudarte hoy?"
+        
+        return "Entiendo tu consulta. Permíteme revisar la información que me proporcionaste anteriormente para darte una respuesta más precisa. ¿Podrías darme un momento?"
+
     def _generate_new_pqrs_response(self, pqrs_data: PQRSData, fecha: str) -> str:
         """Genera respuesta para nueva PQRS"""
         try:

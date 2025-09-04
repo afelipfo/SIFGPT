@@ -7,6 +7,7 @@
 let mediaRecorder;
 let audioChunks = [];
 let isRecording = false;
+let sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); // ID único de sesión
 
 // Configuración de la API
 const API_BASE = '';
@@ -38,13 +39,9 @@ const API_ENDPOINTS = {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 SIF-GPT iniciando...');
     
-    // Inicializar componentes
+    // Inicializar solo componentes esenciales
     initializeChat();
     initializeAudio();
-    initializeSystem();
-    
-    // Cargar datos iniciales
-    loadInitialData();
     
     console.log('✅ SIF-GPT iniciado correctamente');
 });
@@ -78,16 +75,6 @@ function initializeAudio() {
     }
 }
 
-function initializeSystem() {
-    // Inicializar Select2 para filtros avanzados
-    if (typeof $ !== 'undefined' && $.fn.select2) {
-        $('.select2').select2({
-            placeholder: 'Selecciona una opción',
-            allowClear: true
-        });
-    }
-}
-
 // ============================================================================
 // FUNCIONALIDADES DEL CHAT
 // ============================================================================
@@ -108,9 +95,10 @@ function sendMessage() {
     // Mostrar indicador de carga
     showLoading(true);
     
-    // Enviar mensaje al servidor
+    // Enviar mensaje al servidor con session_id para contexto
     axios.post(API_ENDPOINTS.pqrs.processText, {
-        message: message
+        message: message,
+        session_id: sessionId
     })
     .then(response => {
         if (response.data.success) {
@@ -442,7 +430,6 @@ function refreshCaches() {
     // Aquí podrías hacer una llamada a la API para refrescar cachés
     setTimeout(() => {
         showNotification('Cachés refrescadas correctamente', 'success');
-        loadInitialData(); // Recargar datos
     }, 2000);
 }
 
@@ -462,19 +449,6 @@ function viewLogs() {
 // ============================================================================
 // FUNCIONES DE UTILIDAD
 // ============================================================================
-
-function loadInitialData() {
-    // Cargar métricas del dashboard
-    loadDashboardMetrics();
-}
-
-function loadDashboardMetrics() {
-    // Simular carga de métricas del dashboard
-    setTimeout(() => {
-        // Las métricas ya están hardcodeadas en el HTML
-        console.log('✅ Métricas del dashboard cargadas');
-    }, 1000);
-}
 
 function showLoading(show) {
     // Implementar indicador de carga si es necesario

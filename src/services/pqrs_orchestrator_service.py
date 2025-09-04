@@ -92,6 +92,190 @@ class PQRSOrchestratorService:
                 "timestamp": ""
             }
     
+    def process_text_pqrs_with_context(self, text: str, conversation_context: Dict[str, Any]) -> Dict[str, Any]:
+        """Procesa una PQRS desde texto con contexto conversacional"""
+        try:
+            logger.info("Iniciando procesamiento de PQRS desde texto con contexto")
+            
+            # Paso 1: Detectar si hay consulta por radicado específico
+            radicado_detectado = self._extract_radicado_from_text(text)
+            if radicado_detectado:
+                logger.info(f"Radicado detectado: {radicado_detectado}")
+                return self._process_radicado_query(radicado_detectado, text, conversation_context)
+            
+            # Paso 2: Analizar si necesita clasificación completa o es conversación
+            requires_classification = self._requires_full_classification(text, conversation_context)
+            
+            if requires_classification:
+                # Clasificación completa para nuevas solicitudes
+                pqrs_data = self.classifier_service.classify_pqrs(text)
+                logger.info(f"PQRS clasificada como: {pqrs_data.clase}")
+                
+                # Actualizar contexto con información de clasificación
+                conversation_context['current_topic'] = pqrs_data.tema_principal
+                conversation_context['classification_history'].append({
+                    'clase': pqrs_data.clase,
+                    'tipo': pqrs_data.tipo_solicitud,
+                    'tema': pqrs_data.tema_principal
+                })
+            else:
+                # Usar clasificación del contexto existente
+                pqrs_data = self._create_contextual_pqrs_data(text, conversation_context)
+                logger.info("Usando contexto conversacional existente")
+            
+            # Paso 3: Generar respuesta conversacional inteligente
+            response = self.response_service.generate_conversational_response(
+                pqrs_data, text, conversation_context
+            )
+            
+            # Paso 4: Preparar resultado
+            result = {
+                "success": True,
+                "response": response,
+                "pqrs_data": pqrs_data.to_dict() if hasattr(pqrs_data, 'to_dict') else {},
+                "context_updated": True
+            }
+            
+            logger.info("Procesamiento de PQRS desde texto con contexto completado exitosamente")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error en procesamiento de PQRS con contexto: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "response": "Lo sentimos, ha ocurrido un error. ¿Podrías repetir tu consulta?",
+                "context_updated": False
+            }
+
+    def _requires_full_classification(self, text: str, context: Dict[str, Any]) -> bool:
+        """Determina si el mensaje requiere clasificación completa o es conversación"""
+        # Mensajes cortos o de confirmación no requieren clasificación
+        if len(text.strip()) < 10 or text.lower().strip() in ['ok', 'sí', 'si', 'no', 'gracias', 'perfecto']:
+            return False
+        
+        # Si no hay contexto previo, requiere clasificación
+        if not context.get('messages') or len(context['messages']) <= 1:
+            return True
+        
+        # Si menciona nuevos temas, requiere clasificación
+        new_topic_keywords = ['nuevo', 'otra', 'también', 'además', 'diferente']
+        if any(keyword in text.lower() for keyword in new_topic_keywords):
+            return True
+        
+        return False
+
+    def _extract_radicado_from_text(self, text: str) -> str:
+        """Extrae número de radicado del texto usando expresiones regulares"""
+        import re
+        
+        # Patrones para detectar radicados
+        patterns = [
+            r'radicado[:\s]*(\d{12})',  # "radicado: 202510293114" o "radicado 202510293114"
+            r'radicado[:\s]*(\d{4}\d{8})',  # Variación de 12 dígitos
+            r'número[:\s]*(\d{12})',  # "número: 202510293114"
+            r'(\d{12})',  # Simplemente 12 dígitos seguidos
+            r'rad[:\s]*(\d{12})',  # "rad: 202510293114"
+        ]
+        
+        text_lower = text.lower()
+        for pattern in patterns:
+            match = re.search(pattern, text_lower)
+            if match:
+                return match.group(1)
+        
+        return None
+
+    def _process_radicado_query(self, radicado: str, original_text: str, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Procesa una consulta específica por radicado"""
+        try:
+            logger.info(f"Procesando consulta por radicado: {radicado}")
+            
+            # Consultar en el histórico
+            resultado = self.historico_service.consultar_por_radicado(radicado)
+            
+            # Actualizar contexto con el radicado consultado
+            context['current_radicado'] = radicado
+            context['last_query_type'] = 'radicado'
+            
+            if resultado['success']:
+                datos = resultado['datos']
+                
+                # Generar respuesta conversacional con los datos encontrados
+                response = self._format_radicado_response(datos, original_text)
+                
+                return {
+                    "success": True,
+                    "response": response,
+                    "query_type": "radicado",
+                    "radicado": radicado,
+                    "data_found": True,
+                    "context_updated": True
+                }
+            else:
+                # Radicado no encontrado - respuesta conversacional
+                response = f"No encontré información sobre el radicado {radicado}. ¿Podrías verificar que el número esté correcto? A veces hay errores de digitación. Si el número es correcto, es posible que la solicitud sea muy reciente y aún no esté en nuestro sistema."
+                
+                return {
+                    "success": True,
+                    "response": response,
+                    "query_type": "radicado",
+                    "radicado": radicado,
+                    "data_found": False,
+                    "context_updated": True
+                }
+                
+        except Exception as e:
+            logger.error(f"Error procesando consulta de radicado {radicado}: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "response": f"Tuve un problema consultando el radicado {radicado}. ¿Podrías intentar de nuevo?",
+                "context_updated": False
+            }
+
+    def _format_radicado_response(self, datos: Dict[str, Any], original_text: str) -> str:
+        """Formatea una respuesta conversacional con los datos del radicado"""
+        nombre = datos.get('solicitante', 'Ciudadano/a')
+        estado = datos.get('estado_actual', 'Sin estado')
+        fecha = datos.get('fecha_radicacion', 'No disponible')
+        unidad = datos.get('unidad_responsable', 'Secretaría de Infraestructura Física')
+        asunto = datos.get('asunto', 'Solicitud registrada')
+        
+        # Respuesta conversacional profesional y amigable
+        response = f"¡Hemos recibido tu solicitud el día {fecha}! 📋\n\n"
+        response += f"📝 Tu mensaje: \"{asunto}\"\n\n"
+        response += f"📊 Estado: {estado}\n"
+        response += f"🏢 Unidad responsable: {unidad}\n\n"
+        
+        if estado.lower() in ['recibida', 'en proceso', 'pendiente']:
+            response += "Tu solicitud está siendo procesada según los tiempos establecidos por la normatividad vigente. ¡Gracias por contactarnos! 😊"
+        elif estado.lower() in ['resuelta', 'resuelto', 'finalizada']:
+            response += "¡Excelente! Tu solicitud ya fue resuelta. Si tienes dudas adicionales, no dudes en preguntarme."
+        else:
+            response += "Te mantendremos informado sobre cualquier actualización en tu caso."
+            
+        return response
+
+    def _create_contextual_pqrs_data(self, text: str, context: Dict[str, Any]) -> PQRSData:
+        """Crea datos de PQRS basados en el contexto conversacional"""
+        # Usar información del contexto previo
+        last_classification = context['classification_history'][-1] if context['classification_history'] else {}
+        
+        return PQRSData(
+            nombre=context.get('user_info', {}).get('nombre', 'Ciudadano/a'),
+            telefono=context.get('user_info', {}).get('telefono', ''),
+            cedula=context.get('user_info', {}).get('cedula', ''),
+            clase=last_classification.get('clase', 'CONVERSACION'),
+            explicacion=text,
+            radicado=context.get('current_radicado', ''),
+            entidad_responde="Secretaría de Infraestructura Física",
+            es_faq="No",
+            barrio=context.get('user_info', {}).get('barrio', ''),
+            tipo_solicitud=last_classification.get('tipo', 'Seguimiento'),
+            tema_principal=context.get('current_topic', 'Conversación')
+        )
+
     def process_text_pqrs(self, text: str, test: bool = False) -> Dict[str, Any]:
         """Procesa una PQRS desde texto"""
         try:

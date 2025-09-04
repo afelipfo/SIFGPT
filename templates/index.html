@@ -19,480 +19,410 @@
     <!-- FontAwesome 6 -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <!-- Select2 para filtros avanzados -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-    
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="/static/css/styles.css">
+    
+    <style>
+        :root {
+            /* Paleta azul, naranja y blanco */
+            --primary-blue: #1e40af;
+            --secondary-blue: #3b82f6;
+            --accent-orange: #f97316;
+            --light-orange: #fed7aa;
+            --white: #ffffff;
+            --light-gray: #f8fafc;
+            --medium-gray: #e2e8f0;
+            --dark-gray: #475569;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Override default styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--light-gray);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            box-shadow: var(--shadow-lg);
+            padding: 1.5rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 2rem;
+            color: var(--white) !important;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            justify-content: center;
+            width: 100%;
+            text-decoration: none;
+        }
+
+        .navbar-brand img {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Main container */
+        .main-container {
+            padding: 2rem 0;
+            min-height: calc(100vh - 140px);
+        }
+
+        /* Chat section title */
+        .section-title {
+            color: var(--primary-blue);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        /* Chat container */
+        .chat-container {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 2rem;
+            height: 70vh;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--medium-gray);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            border: 1px solid var(--medium-gray);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            background: var(--light-gray);
+        }
+
+        /* Welcome message */
+        .welcome-message {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--dark-gray);
+        }
+
+        .welcome-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            margin: 0 auto 1.5rem;
+            display: block;
+            box-shadow: var(--shadow);
+        }
+
+        .welcome-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .welcome-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Message styles */
+        .message {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            max-width: 80%;
+            box-shadow: var(--shadow);
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .message-user {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            color: var(--white);
+            margin-left: auto;
+        }
+
+        .message-bot {
+            background: linear-gradient(135deg, var(--accent-orange) 0%, var(--light-orange) 100%);
+            color: var(--text-dark);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Input area */
+        .message-input {
+            display: flex;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .input-group {
+            flex: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--medium-gray);
+        }
+
+        .form-control {
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            background: var(--white);
+            resize: none;
+            min-height: 60px;
+            max-height: 120px;
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            border-color: var(--secondary-blue);
+        }
+
+        /* Audio controls */
+        .audio-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        #micButton {
+            background: linear-gradient(135deg, var(--accent-orange) 0%, var(--light-orange) 100%);
+            border: none;
+            border-radius: 0;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+            height: 60px;
+            min-width: 60px;
+            border-right: 1px solid rgba(255,255,255,0.2);
+        }
+
+        #micButton:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, #ea580c 0%, var(--accent-orange) 100%);
+        }
+
+        #sendButton {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            border: none;
+            border-radius: 0 12px 12px 0;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            height: 60px;
+            min-width: 60px;
+            color: var(--white);
+        }
+
+        #sendButton:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem 0;
+            }
+            
+            .chat-container {
+                height: 60vh;
+                padding: 1rem;
+            }
+            
+            .navbar-brand {
+                font-size: 1.5rem;
+            }
+            
+            .navbar-brand img {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
 </head>
 
 <body>
     <!-- Navbar Principal -->
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="#">
                 <img src="/static/images/logo-medellin.png" alt="Logo Alcaldía de Medellín">
                 SIF-GPT
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#" onclick="showTab('pqrs-tab')">
-                            <i class="fas fa-comments me-1"></i>
-                            PQRS Chat
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showTab('historico-tab')">
-                            <i class="fas fa-history me-1"></i>
-                            Histórico
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showTab('dashboard-tab')">
-                            <i class="fas fa-chart-bar me-1"></i>
-                            Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showTab('sistema-tab')">
-                            <i class="fas fa-cogs me-1"></i>
-                            Sistema
-                        </a>
-                    </li>
-                </ul>
-            </div>
         </div>
     </nav>
 
     <!-- Contenedor Principal -->
     <div class="container main-container">
-        <!-- Pestañas de Navegación -->
-        <div class="tab-content">
-            <div class="tab-pane active" id="pqrs-tab">
-                <div class="row">
-                    <div class="col-12">
-                        <h2 class="section-title">
-                            <i class="fas fa-comments text-primary me-2"></i>
-                            Sistema de PQRS Inteligente
-                        </h2>
-                        <p class="section-subtitle">
-                            Procesa PQRS usando Inteligencia Artificial. Escribe tu consulta o graba un audio.
-                        </p>
-                    </div>
-                </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-8">
+                <h2 class="section-title">Conversación</h2>
                 
-                <div class="row">
-                    <div class="col-lg-8">
-                        <!-- Chat Container -->
-                        <div class="chat-container">
-                            <div class="chat-messages" id="chat-messages">
-                                <div class="message message-bot">
-                                    <i class="fas fa-robot me-2"></i>
-                                    ¡Hola! Soy SIF-GPT, tu asistente inteligente para PQRS. 
-                                    ¿En qué puedo ayudarte hoy?
-                                </div>
-                            </div>
-                            
-                            <!-- Controles de Audio -->
-                            <div class="audio-controls">
-                                <button class="mic-button" id="micButton" title="Grabar Audio">
-                                    <i class="fas fa-microphone"></i>
-                                </button>
-                                <span class="text-muted">Presiona para grabar audio</span>
-                            </div>
-                            
-                            <!-- Input de Texto -->
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="messageInput" 
-                                       placeholder="Escribe tu PQRS aquí...">
-                                <button class="btn btn-primary" type="button" id="sendButton">
-                                    <i class="fas fa-paper-plane me-2"></i>
-                                    Enviar
-                                </button>
-                            </div>
+                <!-- Chat Container -->
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="welcome-message" id="welcomeMessage">
+                            <img src="/static/images/logo-medellin.png" alt="Logo Alcaldía" class="welcome-logo">
+                            <h3 class="welcome-title">¡Hola! Soy SIF-GPT</h3>
+                            <p class="welcome-text">
+                                Tu asistente para consultas de PQRS. Puedo ayudarte a encontrar información sobre tus solicitudes y consultar estados de radicados.
+                            </p>
                         </div>
                     </div>
                     
-                    <div class="col-lg-4">
-                        <!-- Estadísticas Rápidas -->
-                        <div class="stats-card mb-3">
-                            <h5 class="card-title">
-                                <i class="fas fa-chart-pie text-primary me-2"></i>
-                                Estadísticas Rápidas
-                            </h5>
-                            <div id="quickStats">
-                                <div class="row text-center">
-                                    <div class="col-6">
-                                        <div class="stats-number" id="totalPQRS">10,618</div>
-                                        <div class="stats-label">Total PQRS</div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="stats-number" id="resueltas">8,245</div>
-                                        <div class="stats-label">Resueltas</div>
-                                    </div>
-                                </div>
-                                <div class="row text-center mt-3">
-                                    <div class="col-6">
-                                        <div class="stats-number" id="pendientes">1,847</div>
-                                        <div class="stats-label">Pendientes</div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="stats-number" id="enProceso">526</div>
-                                        <div class="stats-label">En Proceso</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Información del Sistema -->
-                        <div class="stats-card">
-                            <h5 class="card-title">
-                                <i class="fas fa-info-circle text-primary me-2"></i>
-                                Información del Sistema
-                            </h5>
-                            <div class="text-center">
-                                <p class="mb-2"><strong>Versión:</strong> 2.0.0</p>
-                                <p class="mb-2"><strong>Estado:</strong> <span class="badge bg-success">Operativo</span></p>
-                                <p class="mb-0"><strong>Última actualización:</strong> Hoy</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="tab-pane" id="historico-tab">
-                <div class="row">
-                    <div class="col-12">
-                        <h2 class="section-title">
-                            <i class="fas fa-history text-primary me-2"></i>
-                            Consulta de Histórico
-                        </h2>
-                    </div>
-                </div>
-                
-                <!-- Búsqueda Básica -->
-                <div class="search-section">
-                    <h4 class="mb-3">
-                        <i class="fas fa-search text-primary me-2"></i>
-                        Búsqueda Básica
-                    </h4>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">Buscar por Radicado</label>
-                                <input type="text" class="form-control" id="radicadoInput" 
-                                       placeholder="Número de radicado">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">Buscar por Texto</label>
-                                <input type="text" class="form-control" id="textoInput" 
-                                       placeholder="Palabra clave">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">Buscar por Nombre</label>
-                                <input type="text" class="form-control" id="nombreInput" 
-                                       placeholder="Nombre del solicitante">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="text-center">
-                        <button class="btn btn-primary" onclick="buscarHistorico()">
-                            <i class="fas fa-search me-2"></i>
-                            Buscar
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Resultados -->
-                <div class="results-section">
-                    <h4 class="mb-3">
-                        <i class="fas fa-list text-primary me-2"></i>
-                        Resultados de Búsqueda
-                    </h4>
-                    <div id="historicoResults">
-                        <div class="text-center text-muted">
-                            <i class="fas fa-search fa-3x mb-3"></i>
-                            <p>Realiza una búsqueda para ver los resultados</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="tab-pane" id="dashboard-tab">
-                <div class="row">
-                    <div class="col-12">
-                        <h2 class="section-title">
-                            <i class="fas fa-chart-bar text-primary me-2"></i>
-                            Dashboard Avanzado
-                        </h2>
-                    </div>
-                </div>
-                
-                <!-- Métricas -->
-                <div class="row mb-4">
-                    <div class="col-md-3">
-                        <div class="card metric-card">
-                            <div class="metric-number" id="totalPQRS-dash">10,618</div>
-                            <div class="metric-label">Total PQRS</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card metric-card">
-                            <div class="metric-number" id="pendientes-dash">1,847</div>
-                            <div class="metric-label">Pendientes</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card metric-card">
-                            <div class="metric-number" id="resueltas-dash">8,245</div>
-                            <div class="metric-label">Resueltas</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card metric-card">
-                            <div class="metric-number" id="promedioDias">3.2</div>
-                            <div class="metric-label">Promedio Días</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Búsqueda Avanzada -->
-                <div class="search-section">
-                    <h4 class="mb-3">
-                        <i class="fas fa-filter text-primary me-2"></i>
-                        Búsqueda Avanzada
-                    </h4>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Texto de Búsqueda</label>
-                                <input type="text" class="form-control" id="advancedTextoInput" 
-                                       placeholder="Texto a buscar">
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label class="form-label">Límite de Resultados</label>
-                                <select class="form-control" id="limitInput">
-                                    <option value="10">10</option>
-                                    <option value="25">25</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label class="form-label">Ordenar por</label>
-                                <select class="form-control" id="ordenarInput">
-                                    <option value="fecha_radicacion">Fecha Radicación</option>
-                                    <option value="estado_pqrs">Estado</option>
-                                    <option value="clasificacion">Clasificación</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="text-center">
-                        <button class="btn btn-primary" onclick="busquedaAvanzada()">
-                            <i class="fas fa-search-plus me-2"></i>
-                            Búsqueda Avanzada
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Resultados Avanzados -->
-                <div class="results-section">
-                    <h4 class="mb-3">
-                        <i class="fas fa-table text-primary me-2"></i>
-                        Resultados Avanzados
-                    </h4>
-                    <div id="advancedResults">
-                        <div class="text-center text-muted">
-                            <i class="fas fa-chart-line fa-3x mb-3"></i>
-                            <p>Realiza una búsqueda avanzada para ver los resultados</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="tab-pane" id="sistema-tab">
-                <div class="row">
-                    <div class="col-12">
-                        <h2 class="section-title">
-                            <i class="fas fa-cogs text-primary me-2"></i>
-                            Estado del Sistema
-                        </h2>
-                    </div>
-                </div>
-                
-                <!-- Estado de Servicios -->
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="fas fa-heartbeat text-success me-2"></i>
-                                    Salud del Sistema
-                                </h5>
-                                <div id="systemHealth">
-                                    <div class="text-center">
-                                        <div class="spinner-border text-primary" role="status">
-                                            <span class="visually-hidden">Verificando...</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="fas fa-database text-info me-2"></i>
-                                    Base de Datos
-                                </h5>
-                                <div id="databaseStatus">
-                                    <div class="text-center">
-                                        <div class="spinner-border text-primary" role="status">
-                                            <span class="visually-hidden">Verificando...</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Acciones del Sistema -->
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="fas fa-sync-alt text-warning me-2"></i>
-                                    Mantenimiento
-                                </h5>
-                                <div class="d-grid gap-2">
-                                    <button class="btn btn-warning" onclick="refreshCaches()">
-                                        <i class="fas fa-sync-alt me-2"></i>
-                                        Refrescar Cachés
-                                    </button>
-                                    <button class="btn btn-info" onclick="validateSystem()">
-                                        <i class="fas fa-check-circle me-2"></i>
-                                        Validar Sistema
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="fas fa-file-alt text-primary me-2"></i>
-                                    Logs del Sistema
-                                </h5>
-                                <div id="systemLogs">
-                                    <div class="text-center">
-                                        <button class="btn btn-outline-primary" onclick="viewLogs()">
-                                            <i class="fas fa-eye me-2"></i>
-                                            Ver Logs
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                    <!-- Controles de chat unificados -->
+                    <div class="message-input">
+                        <div class="input-group">
+                            <input type="text" id="messageInput" class="form-control" 
+                                   placeholder="Escribe tu PQRS aquí..." autocomplete="off">
+                            <button id="micButton" class="btn btn-warning" type="button" title="Grabar audio">
+                                <i class="fas fa-microphone"></i>
+                                Grabar
+                            </button>
+                            <button id="sendButton" class="btn" type="button">
+                                <i class="fas fa-paper-plane"></i>
+                                Enviar
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="logo-section">
-                        <img src="/static/images/logo-medellin.png" alt="Logo Alcaldía de Medellín">
-                        <h5>SIF-GPT</h5>
-                    </div>
-                    <p>Sistema de PQRS Inteligente</p>
-                    <p>Versión 2.0.0</p>
-                </div>
-                <div class="col-md-4">
-                    <h5>
-                        <i class="fas fa-cogs me-2"></i>
-                        Funcionalidades
-                    </h5>
-                    <p onclick="showTab('pqrs-tab')">Procesamiento de PQRS con IA</p>
-                    <p onclick="showTab('pqrs-tab')">Transcripción de audio</p>
-                    <p onclick="showTab('historico-tab')">Consulta de histórico</p>
-                </div>
-                <div class="col-md-4">
-                    <h5>
-                        <i class="fas fa-info-circle me-2"></i>
-                        Información
-                    </h5>
-                    <p>Secretaría de Infraestructura Física</p>
-                    <p>Alcaldía de Medellín</p>
-                    <p>Colombia</p>
-                </div>
-            </div>
+
+    <!-- Indicador de carga global -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
         </div>
-    </footer>
+        <p class="mt-2">Procesando...</p>
+    </div>
+
+    <!-- Notificaciones Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 
     <!-- Scripts -->
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Bootstrap 5.3 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <!-- Axios para peticiones HTTP -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     
-    <!-- Script principal -->
+    <!-- SIF-GPT JavaScript -->
     <script src="/static/js/sifgpt-unified.js"></script>
-    
+
     <script>
-        // Función para mostrar pestañas
-        function showTab(tabId) {
-            // Ocultar todas las pestañas
-            const tabPanes = document.querySelectorAll('.tab-pane');
-            tabPanes.forEach(pane => pane.classList.remove('active'));
+        // Auto-resize textarea y funciones auxiliares
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageInput = document.getElementById('messageInput');
             
-            // Mostrar la pestaña seleccionada
-            const selectedTab = document.getElementById(tabId);
-            if (selectedTab) {
-                selectedTab.classList.add('active');
+            // Auto-resize textarea
+            if (messageInput) {
+                messageInput.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+                });
+
+                // Send on Enter
+                messageInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        document.getElementById('sendButton').click();
+                    }
+                });
+
+                // Focus on input
+                messageInput.focus();
             }
-            
-            // Actualizar navegación activa
-            const navLinks = document.querySelectorAll('.nav-link');
-            navLinks.forEach(link => link.classList.remove('active'));
-            
-            // Encontrar y activar el link correspondiente
-            const activeLink = document.querySelector(`[onclick="showTab('${tabId}')"]`);
-            if (activeLink) {
-                activeLink.classList.add('active');
+        });
+
+        // Smooth scrolling to bottom
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('chat-messages');
+            if (messagesContainer) {
+                messagesContainer.scrollTo({
+                    top: messagesContainer.scrollHeight,
+                    behavior: 'smooth'
+                });
             }
         }
-        
-        // Inicializar cuando se carga la página
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 SIF-GPT iniciando...');
+
+        // Hide welcome message when first message is sent
+        function hideWelcomeMessage() {
+            const welcomeMsg = document.getElementById('welcomeMessage');
+            if (welcomeMsg) {
+                welcomeMsg.style.display = 'none';
+            }
+        }
+
+        // Enhanced notification system
+        function showNotification(message, type = 'info') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toastId = 'toast-' + Date.now();
             
-            // Mostrar pestaña PQRS por defecto
-            showTab('pqrs-tab');
+            const iconMap = {
+                'success': 'fa-check-circle',
+                'error': 'fa-exclamation-circle',
+                'warning': 'fa-exclamation-triangle',
+                'info': 'fa-info-circle'
+            };
             
-            console.log('✅ SIF-GPT iniciado correctamente');
-        });
-    </script>
-</body>
+            const toastHtml = `
+                <div class="toast" id="${toastId}" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                    <div class="toast-header bg-${type} text-white">
+                        <i class="fas ${iconMap[type]} me-2"></i>
+                        <strong class="me-auto">SIF-GPT</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            
+            const toast = new bootstrap.Toast(document.getElementById(toastId));
+            toast.show();
+            
+            document.getElementById(toastId).addEventListener('hidden.bs.toast', function() {
+                this.remove();
+            });
+        }
+
+        // Función para mostrar/ocultar loading
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.style.display = show ? 'flex' : 'none';
+            }
 </html>

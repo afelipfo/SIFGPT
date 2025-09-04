@@ -11,6 +11,10 @@ from src.controllers.pqrs_controller import pqrs_bp
 from src.utils.logger import logger
 from datetime import datetime
 import os
+from dotenv import load_dotenv
+
+# Cargar variables de entorno desde .env
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -108,14 +112,71 @@ def test_historico():
             "error": str(e)
         }), 500
 
+# Variable global para mantener el contexto conversacional
+conversation_context = {}
+
 @app.route('/api/pqrs/process-simple', methods=['POST'])
 def process_simple():
-    """Endpoint simplificado que siempre funciona"""
+    """Endpoint simplificado para procesar PQRS con IA y contexto conversacional"""
     try:
         data = request.get_json()
         message = data.get('message', '')
+        session_id = data.get('session_id', 'default')  # ID de sesión para contexto
         
-        # Respuesta directa sin clasificación compleja
+        if not message or not message.strip():
+            return jsonify({
+                "success": False,
+                "error": "Mensaje vacío"
+            }), 400
+            
+        # Inicializar contexto de conversación si no existe
+        if session_id not in conversation_context:
+            conversation_context[session_id] = {
+                'messages': [],
+                'user_info': {},
+                'current_topic': None,
+                'classification_history': []
+            }
+        
+        # Agregar mensaje del usuario al contexto
+        conversation_context[session_id]['messages'].append({
+            'role': 'user',
+            'content': message.strip(),
+            'timestamp': datetime.now().isoformat()
+        })
+        
+        # Usar el orquestrador de PQRS si está disponible
+        if pqrs_orchestrator:
+            logger.info(f"Procesando PQRS con IA y contexto: {message[:100]}...")
+            
+            # Pasar el contexto conversacional al orquestrador
+            result = pqrs_orchestrator.process_text_pqrs_with_context(
+                message.strip(), 
+                conversation_context[session_id]
+            )
+            
+            if result["success"]:
+                # Agregar respuesta del asistente al contexto
+                conversation_context[session_id]['messages'].append({
+                    'role': 'assistant',
+                    'content': result["response"],
+                    'timestamp': datetime.now().isoformat()
+                })
+                
+                # Limpiar contexto si es muy largo (mantener últimos 10 mensajes)
+                if len(conversation_context[session_id]['messages']) > 10:
+                    conversation_context[session_id]['messages'] = conversation_context[session_id]['messages'][-10:]
+                
+                return jsonify({
+                    "success": True,
+                    "response": result["response"]
+                })
+            else:
+                logger.error(f"Error en procesamiento de PQRS: {result.get('error', 'Error desconocido')}")
+                # Si falla el procesamiento con IA, usar respuesta básica
+                pass
+        
+        # Respuesta de fallback si no hay IA o falla
         fecha = datetime.now().strftime("%d/%m/%Y")
         
         respuesta = f"""¡Hola! Hemos recibido tu solicitud el día {fecha}.
@@ -140,6 +201,7 @@ Secretaría de Infraestructura Física - Alcaldía de Medellín"""
         })
         
     except Exception as e:
+        logger.error(f"Error en process_simple: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e)
@@ -266,4 +328,4 @@ if __name__ == '__main__':
     logger.info("📱 Frontend unificado disponible en: http://localhost:5000")
     logger.info("🔌 API disponible en: http://localhost:5000/api")
     logger.info("🧪 Tests disponibles en: http://localhost:5000/test")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=5000)
