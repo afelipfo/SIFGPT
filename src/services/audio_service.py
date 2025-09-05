@@ -33,32 +33,60 @@ class OpenAIWhisperStrategy(TranscriptionStrategy):
     def transcribe(self, audio_file) -> str:
         """Transcribe usando OpenAI Whisper"""
         try:
+            logger.info("Iniciando transcripción con OpenAI Whisper")
+            
             # Convertir FileStorage de Flask a bytes para OpenAI
             if hasattr(audio_file, 'read'):
                 # Si es un FileStorage de Flask, leer los bytes
+                logger.info(f"Procesando FileStorage - filename: {getattr(audio_file, 'filename', 'unknown')}")
+                
+                # Resetear posición del archivo por si ya fue leído
+                if hasattr(audio_file, 'seek'):
+                    audio_file.seek(0)
+                
                 audio_bytes = audio_file.read()
+                logger.info(f"Audio leído: {len(audio_bytes)} bytes")
+                
+                if len(audio_bytes) == 0:
+                    raise ValueError("El archivo de audio está vacío")
+                
                 # Crear un objeto BytesIO para OpenAI
                 from io import BytesIO
                 audio_io = BytesIO(audio_bytes)
-                audio_io.name = audio_file.filename  # OpenAI necesita el nombre del archivo
+                
+                # OpenAI necesita el nombre del archivo para determinar el formato
+                if hasattr(audio_file, 'filename') and audio_file.filename:
+                    audio_io.name = audio_file.filename
+                else:
+                    # Asumir formato WAV por defecto si no hay nombre
+                    audio_io.name = 'recording.wav'
+                
+                logger.info(f"Preparando para transcripción con nombre: {audio_io.name}")
             else:
                 audio_io = audio_file
+                logger.info("Usando archivo directo para transcripción")
             
+            # Realizar transcripción
             transcription = self.client.audio.transcriptions.create(
                 model=self.model,
                 file=audio_io,
                 language='es',
                 response_format="text"
             )
-            logger.info("Transcripción OpenAI Whisper completada exitosamente")
-            return transcription
+            
+            if not transcription or not transcription.strip():
+                raise ValueError("La transcripción resultó vacía")
+            
+            logger.info(f"Transcripción OpenAI Whisper completada exitosamente: {len(transcription)} caracteres")
+            return transcription.strip()
+            
         except Exception as e:
-            logger.error(f"Error en transcripción OpenAI Whisper: {e}")
+            logger.error(f"Error en transcripción OpenAI Whisper: {str(e)}", exc_info=True)
             raise
     
     def get_supported_formats(self) -> List[str]:
         """Formatos soportados por OpenAI Whisper"""
-        return ["mp3", "mp4", "mpeg", "mpga", "m4a", "wav", "webm"]
+        return ["mp3", "mp4", "mpeg", "mpga", "m4a", "wav", "webm", "ogg", "flac", "aac"]
 
 class FasterWhisperStrategy(TranscriptionStrategy):
     """Estrategia de transcripción usando Faster Whisper (local)"""
@@ -119,46 +147,63 @@ class AudioService:
     def transcribe_audio(self, audio_file) -> AudioTranscription:
         """Transcribe un archivo de audio"""
         try:
+            logger.info("Iniciando transcripción de audio")
+            
             # Obtener nombre del archivo
             if hasattr(audio_file, 'filename'):
                 filename = audio_file.filename
             elif hasattr(audio_file, 'name'):
                 filename = os.path.basename(audio_file.name)
             else:
-                filename = str(audio_file)
+                filename = "recording.wav"  # Nombre por defecto
             
-            # Validar formato antes de transcribir
+            logger.info(f"Procesando archivo: {filename}")
+            
+            # Validar formato antes de transcribir (pero no fallar si no es válido)
             if not self.validate_audio_format(filename):
-                raise ValueError(f"Formato de audio no soportado: {filename}")
+                logger.warning(f"Formato posiblemente no soportado, pero continuando: {filename}")
             
             # Realizar transcripción
+            logger.info("Iniciando proceso de transcripción...")
             transcription_text = self.strategy.transcribe(audio_file)
             
             # Validar que la transcripción no esté vacía
             if not transcription_text or not transcription_text.strip():
-                raise ValueError("La transcripción resultó vacía")
+                raise ValueError("La transcripción resultó vacía - el audio podría no contener habla reconocible")
             
             # Crear objeto de transcripción
             audio_transcription = AudioTranscription(
                 audio_file=filename,
-                transcription=transcription_text
+                transcription=transcription_text.strip()
             )
             
-            logger.info(f"Transcripción completada para: {filename} - {len(transcription_text)} caracteres")
+            logger.info(f"Transcripción completada exitosamente para: {filename} - {len(transcription_text)} caracteres")
+            logger.info(f"Texto transcrito: {transcription_text[:100]}...")  # Primeros 100 caracteres para debug
+            
             return audio_transcription
             
         except Exception as e:
-            logger.error(f"Error en transcripción de audio: {e}")
+            logger.error(f"Error en transcripción de audio: {str(e)}", exc_info=True)
             raise
     
     def validate_audio_format(self, filename: str) -> bool:
         """Valida si el formato de audio es soportado"""
+        if not filename:
+            logger.warning("Nombre de archivo vacío, asumiendo formato válido")
+            return True  # Permitir archivos sin nombre específico (como recording.wav)
+        
         extension = Path(filename).suffix.lower().lstrip('.')
+        if not extension:
+            logger.warning("Sin extensión, asumiendo formato válido")
+            return True  # Permitir archivos sin extensión específica
+        
         supported_formats = self.strategy.get_supported_formats()
         is_valid = extension in supported_formats
         
         if not is_valid:
-            logger.warning(f"Formato de audio no soportado: {extension}")
+            logger.warning(f"Formato de audio no soportado: {extension}. Formatos soportados: {supported_formats}")
+        else:
+            logger.info(f"Formato de audio válido: {extension}")
         
         return is_valid
     

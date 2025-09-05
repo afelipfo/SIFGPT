@@ -50,46 +50,65 @@ class PQRSOrchestratorService:
             logger.error(f"Error al inicializar orquestador de PQRS: {e}")
             raise
     
-    def process_audio_pqrs(self, audio_file) -> Dict[str, Any]:
+    def process_audio_pqrs(self, audio_file, session_id: str = None) -> Dict[str, Any]:
         """Procesa una PQRS desde un archivo de audio"""
         try:
-            logger.info("Iniciando procesamiento de PQRS desde audio")
+            logger.info(f"Iniciando procesamiento de PQRS desde audio - Session: {session_id}")
             
             # Paso 1: Transcribir audio
             audio_transcription = self.audio_service.transcribe_audio(audio_file)
             logger.info(f"Audio transcrito: {len(audio_transcription.transcription)} caracteres")
             
-            # Paso 2: Clasificar PQRS
-            pqrs_data = self.classifier_service.classify_pqrs(audio_transcription.transcription)
-            logger.info(f"PQRS clasificada como: {pqrs_data.clase}")
-            
-            # Paso 3: Generar respuesta
-            response = self.response_service.generate_response(pqrs_data, audio_transcription.transcription)
-            logger.info("Respuesta generada exitosamente")
-            
-            # Paso 4: Preparar resultado
-            result = {
-                "success": True,
-                "transcription": audio_transcription.transcription,
-                "pqrs_data": pqrs_data.to_dict(),
-                "response": response,
-                "audio_file": audio_transcription.audio_file,
-                "timestamp": audio_transcription.timestamp.isoformat()
-            }
+            # Paso 2: Procesar texto transcrito usando el método con contexto
+            if session_id:
+                # Usar procesamiento con contexto conversacional
+                conversation_context = {'session_id': session_id}
+                text_result = self.process_text_pqrs_with_context(
+                    audio_transcription.transcription, 
+                    conversation_context
+                )
+                
+                # Combinar resultados
+                result = {
+                    "success": True,
+                    "transcription": audio_transcription.transcription,
+                    "pqrs_data": text_result.get("pqrs_data", {}),
+                    "response": text_result.get("response", ""),
+                    "audio_file": audio_transcription.audio_file,
+                    "timestamp": audio_transcription.timestamp.isoformat(),
+                    "session_id": session_id
+                }
+            else:
+                # Procesamiento sin contexto (método anterior)
+                pqrs_data = self.classifier_service.classify_pqrs(audio_transcription.transcription)
+                logger.info(f"PQRS clasificada como: {pqrs_data.clase}")
+                
+                response = self.response_service.generate_response(pqrs_data, audio_transcription.transcription)
+                logger.info("Respuesta generada exitosamente")
+                
+                result = {
+                    "success": True,
+                    "transcription": audio_transcription.transcription,
+                    "pqrs_data": pqrs_data.to_dict(),
+                    "response": response,
+                    "audio_file": audio_transcription.audio_file,
+                    "timestamp": audio_transcription.timestamp.isoformat()
+                }
             
             logger.info("Procesamiento de PQRS desde audio completado exitosamente")
             return result
             
         except Exception as e:
-            logger.error(f"Error en procesamiento de PQRS desde audio: {e}")
+            logger.error(f"Error en procesamiento de PQRS desde audio: {str(e)}", exc_info=True)
             return {
                 "success": False,
                 "error": str(e),
                 "transcription": "",
                 "pqrs_data": {},
-                "response": "Lo sentimos, ha ocurrido un error en el procesamiento de tu solicitud.",
+                "response": "Lo sentimos, ha ocurrido un error en el procesamiento de tu solicitud de audio.",
                 "audio_file": "",
-                "timestamp": ""
+                "timestamp": "",
+                "session_id": session_id or ""
             }
     
     def process_text_pqrs_with_context(self, text: str, conversation_context: Dict[str, Any]) -> Dict[str, Any]:
@@ -97,6 +116,12 @@ class PQRSOrchestratorService:
         try:
             logger.info("Iniciando procesamiento de PQRS desde texto con contexto")
             
+            # Inicializar contexto si no existe
+            if 'classification_history' not in conversation_context:
+                conversation_context['classification_history'] = []
+            if 'current_topic' not in conversation_context:
+                conversation_context['current_topic'] = None
+                
             # Paso 1: Detectar si hay consulta por radicado específico
             radicado_detectado = self._extract_radicado_from_text(text)
             if radicado_detectado:
@@ -124,9 +149,14 @@ class PQRSOrchestratorService:
                 logger.info("Usando contexto conversacional existente")
             
             # Paso 3: Generar respuesta conversacional inteligente
-            response = self.response_service.generate_conversational_response(
-                pqrs_data, text, conversation_context
-            )
+            try:
+                response = self.response_service.generate_conversational_response(
+                    pqrs_data, text, conversation_context
+                )
+            except AttributeError:
+                # Fallback si no existe el método conversacional
+                logger.warning("Método conversacional no encontrado, usando respuesta estándar")
+                response = self.response_service.generate_response(pqrs_data, text)
             
             # Paso 4: Preparar resultado
             result = {

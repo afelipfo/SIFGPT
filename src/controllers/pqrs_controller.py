@@ -73,6 +73,7 @@ def process_audio():
     try:
         # Verificar que se haya enviado un archivo de audio
         if 'audio' not in request.files:
+            logger.error("No se proporcionó archivo de audio en la request")
             return jsonify({
                 "success": False,
                 "error": "No se proporcionó archivo de audio"
@@ -80,15 +81,23 @@ def process_audio():
         
         audio_file = request.files['audio']
         if not audio_file.filename:
+            logger.error("Archivo de audio inválido - filename vacío")
             return jsonify({
                 "success": False,
                 "error": "Archivo de audio inválido"
             }), 400
         
+        logger.info(f"Procesando archivo de audio: {audio_file.filename}, tipo: {audio_file.content_type}")
+        
+        # Obtener session_id si está disponible
+        session_id = request.form.get('session_id', 'default_session')
+        logger.info(f"Session ID: {session_id}")
+        
         # Procesar PQRS desde audio
-        result = pqrs_orchestrator.process_audio_pqrs(audio_file)
+        result = pqrs_orchestrator.process_audio_pqrs(audio_file, session_id)
         
         if result["success"]:
+            logger.info("Audio procesado exitosamente")
             return jsonify({
                 "success": True,
                 "transcript": result["transcription"],
@@ -96,16 +105,17 @@ def process_audio():
                 "response": result["response"]
             })
         else:
+            logger.error(f"Error en procesamiento de audio: {result.get('error', 'Error desconocido')}")
             return jsonify({
                 "success": False,
                 "error": result.get("error", "Error desconocido en el procesamiento")
             }), 500
             
     except Exception as e:
-        logger.error(f"Error en endpoint process_audio: {e}")
+        logger.error(f"Error en endpoint process_audio: {str(e)}", exc_info=True)
         return jsonify({
             "success": False,
-            "error": "Error interno del servidor al procesar el audio"
+            "error": f"Error interno del servidor al procesar el audio: {str(e)}"
         }), 500
 
 @pqrs_bp.route('/transcribe-audio', methods=['POST'])

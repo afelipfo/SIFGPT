@@ -8,10 +8,10 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/static/images/logo-medellin.png">
     
-    <!-- Fuentes -->
+    <!-- Fuentes corporativas -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Bootstrap 5.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -23,27 +23,79 @@
     <link rel="stylesheet" href="/static/css/styles.css">
     
     <style>
+        /* Variables de diseño corporativo mejoradas */
         :root {
-            /* Paleta azul, naranja y blanco */
-            --primary-blue: #1e40af;
-            --secondary-blue: #3b82f6;
+            /* Paleta institucional refinada */
+            --primary-blue: #003f7f;
+            --secondary-blue: #2563eb;
+            --accent-blue: #3b82f6;
             --accent-orange: #f97316;
             --light-orange: #fed7aa;
+            --success-green: #10b981;
+            --warning-amber: #f59e0b;
+            --error-red: #ef4444;
+            
+            /* Neutrales corporativos */
             --white: #ffffff;
-            --light-gray: #f8fafc;
-            --medium-gray: #e2e8f0;
-            --dark-gray: #475569;
-            --text-dark: #1e293b;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            
+            /* Tipografía corporativa */
+            --font-primary: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-secondary: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            
+            /* Tamaños tipográficos jerarquizados */
+            --text-xs: 0.75rem;     /* 12px */
+            --text-sm: 0.875rem;    /* 14px */
+            --text-base: 1rem;      /* 16px */
+            --text-lg: 1.125rem;    /* 18px */
+            --text-xl: 1.25rem;     /* 20px */
+            --text-2xl: 1.5rem;     /* 24px */
+            --text-3xl: 1.875rem;   /* 30px */
+            
+            /* Espaciado consistente */
+            --spacing-xs: 0.25rem;   /* 4px */
+            --spacing-sm: 0.5rem;    /* 8px */
+            --spacing-md: 1rem;      /* 16px */
+            --spacing-lg: 1.5rem;    /* 24px */
+            --spacing-xl: 2rem;      /* 32px */
+            --spacing-2xl: 3rem;     /* 48px */
+            
+            /* Sombras corporativas */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            
+            /* Bordes y radios */
+            --border-radius-sm: 0.375rem;  /* 6px */
+            --border-radius-md: 0.5rem;    /* 8px */
+            --border-radius-lg: 0.75rem;   /* 12px */
+            --border-radius-xl: 1rem;      /* 16px */
+            
+            /* Transiciones suaves */
+            --transition-fast: 0.15s ease-out;
+            --transition-normal: 0.3s ease-out;
+            --transition-slow: 0.5s ease-out;
         }
 
-        /* Override default styles */
+        /* Reset y base tipográfica corporativa */
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--light-gray);
-            color: var(--text-dark);
+            font-family: var(--font-primary);
+            font-size: var(--text-base);
             line-height: 1.6;
+            color: var(--gray-800);
+            background: var(--gray-50);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         /* Header */
@@ -244,7 +296,205 @@
             box-shadow: var(--shadow-lg);
         }
 
-        /* Responsive */
+        /* Toast notifications */
+        .toast {
+            background: var(--white);
+            border: none;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            border-left: 4px solid var(--accent-orange);
+        }
+
+        .toast.success {
+            border-left-color: var(--success-green);
+        }
+
+        .toast.error {
+            border-left-color: var(--error-red);
+        }
+
+        .toast-header {
+            background: transparent;
+            border-bottom: 1px solid var(--light-gray);
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        .toast-body {
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        /* Status indicators */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .status-indicator.processing {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-blue);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .status-indicator.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success-green);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .status-indicator.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-red);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* Enhanced accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Hidden elements */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Status indicator styles */
+        .status-ready {
+            animation: none;
+            background: var(--primary-blue);
+        }
+
+        /* Enhanced accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Focus styles for accessibility */
+        button:focus,
+        input:focus,
+        .btn:focus {
+            outline: 2px solid var(--secondary-blue);
+            outline-offset: 2px;
+        }
+
+        /* Enhanced button states */
+        .btn.ready {
+            background: linear-gradient(135deg, var(--success-green) 0%, #059669 100%) !important;
+            transform: scale(1.02);
+        }
+
+        .btn.recording {
+            background: linear-gradient(135deg, var(--error-red) 0%, #dc2626 100%) !important;
+            color: var(--white) !important;
+            animation: pulse 1.5s infinite;
+        }
+
+        .btn.processing {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%) !important;
+            color: var(--white) !important;
+            opacity: 0.8;
+            cursor: wait;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Enhanced input styles */
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: var(--secondary-blue);
+            background: var(--white);
+        }
+
+        .form-control:invalid {
+            border-color: var(--error-red);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        /* Enhanced message animations */
+        .message.new {
+            animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Enhanced scrollbar for chat messages */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--light-gray);
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--medium-gray);
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: var(--dark-gray);
+        }
+
+        /* Skip link for accessibility */
+        .sr-only-focusable:focus {
+            position: absolute !important;
+            top: 6px !important;
+            left: 6px !important;
+            width: auto !important;
+            height: auto !important;
+            padding: 8px 12px !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            clip: auto !important;
+            white-space: nowrap !important;
+            border: none !important;
+            background: var(--primary-blue) !important;
+            color: var(--white) !important;
+            text-decoration: none !important;
+            border-radius: 4px !important;
+            z-index: 10000 !important;
+            font-weight: 600 !important;
+        }
+
+        /* Responsive improvements */
         @media (max-width: 768px) {
             .main-container {
                 padding: 1rem 0;
@@ -253,6 +503,7 @@
             .chat-container {
                 height: 60vh;
                 padding: 1rem;
+                border-radius: 12px;
             }
             
             .navbar-brand {
@@ -263,69 +514,132 @@
                 width: 50px;
                 height: 50px;
             }
+
+            .message {
+                max-width: 90%;
+                font-size: 0.9rem;
+            }
+
+            .input-group {
+                border-radius: 8px;
+            }
+
+            #micButton, #sendButton {
+                padding: 0.75rem 1rem;
+                height: 50px;
+                min-width: 50px;
+            }
+
+            .welcome-title {
+                font-size: 1.25rem;
+            }
+
+            .welcome-text {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chat-container {
+                height: 55vh;
+                padding: 0.75rem;
+            }
+
+            .section-title {
+                font-size: 1.25rem;
+                margin-bottom: 1rem;
+            }
+
+            .message-input {
+                gap: 0.5rem;
+            }
+
+            .audio-controls {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            #micButton, #sendButton {
+                height: 45px;
+                font-size: 0.875rem;
+            }
         }
     </style>
 </head>
 
 <body>
     <!-- Navbar Principal -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark" role="navigation" aria-label="Navegación principal">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">
+            <a class="navbar-brand" href="#" aria-label="SIF-GPT - Sistema de Información de Medellín">
                 <img src="/static/images/logo-medellin.png" alt="Logo Alcaldía de Medellín">
-                SIF-GPT
+                <span>SIF-GPT</span>
             </a>
         </div>
     </nav>
 
     <!-- Contenedor Principal -->
-    <div class="container main-container">
+    <main class="container main-container" role="main">
         <div class="row justify-content-center">
             <div class="col-lg-10 col-xl-8">
-                <h2 class="section-title">Conversación</h2>
-                
                 <!-- Chat Container -->
-                <div class="chat-container">
-                    <div class="chat-messages" id="chat-messages">
+                <section class="chat-container" role="region" aria-label="Área de conversación">
+                    <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="Historial de conversación" tabindex="0">
                         <div class="welcome-message" id="welcomeMessage">
-                            <img src="/static/images/logo-medellin.png" alt="Logo Alcaldía" class="welcome-logo">
-                            <h3 class="welcome-title">¡Hola! Soy SIF-GPT</h3>
+                            <img src="/static/images/logo-medellin.png" alt="Logo Alcaldía de Medellín" class="welcome-logo">
+                            <h2 class="welcome-title">¡Hola! Soy SIF-GPT</h2>
                             <p class="welcome-text">
-                                Tu asistente para consultas de PQRS. Puedo ayudarte a encontrar información sobre tus solicitudes y consultar estados de radicados.
+                                Tu asistente virtual para consultas de PQRS de la Secretaría de Infraestructura Física de la Alcaldía de Medellín. 
+                                Puedo ayudarte a encontrar información sobre tus solicitudes, consultar estados de radicados 
+                                y orientarte en el proceso de presentación de peticiones, quejas, reclamos y sugerencias.
                             </p>
                         </div>
                     </div>
                     
                     <!-- Controles de chat unificados -->
-                    <div class="message-input">
+                    <div class="message-input" role="region" aria-label="Controles de envío de mensaje">
                         <div class="input-group">
-                            <input type="text" id="messageInput" class="form-control" 
-                                   placeholder="Escribe tu PQRS aquí..." autocomplete="off">
-                            <button id="micButton" class="btn btn-warning" type="button" title="Grabar audio">
-                                <i class="fas fa-microphone"></i>
-                                Grabar
+                            <label for="messageInput" class="sr-only">Escribe tu consulta sobre PQRS</label>
+                            <input type="text" 
+                                   id="messageInput" 
+                                   class="form-control" 
+                                   placeholder="Escribe tu consulta sobre PQRS aquí..." 
+                                   autocomplete="off"
+                                   aria-describedby="messageHelp"
+                                   maxlength="1000">
+                            <button id="micButton" 
+                                    class="btn btn-warning" 
+                                    type="button" 
+                                    title="Iniciar grabación de audio"
+                                    aria-label="Grabar mensaje de audio"
+                                    aria-describedby="micHelp">
+                                <i class="fas fa-microphone" aria-hidden="true"></i>
+                                <span class="btn-text">Grabar</span>
                             </button>
-                            <button id="sendButton" class="btn" type="button">
-                                <i class="fas fa-paper-plane"></i>
-                                Enviar
+                            <button id="sendButton" 
+                                    class="btn" 
+                                    type="button"
+                                    title="Enviar mensaje"
+                                    aria-label="Enviar mensaje o consulta"
+                                    disabled>
+                                <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                                <span class="btn-text">Enviar</span>
                             </button>
                         </div>
+                        <div id="messageHelp" class="sr-only">
+                            Puedes escribir tu consulta o usar el botón de grabación para enviar un mensaje de audio
+                        </div>
+                        <div id="micHelp" class="sr-only">
+                            Presiona para iniciar la grabación de audio. Presiona nuevamente para detener
+                        </div>
                     </div>
-                </div>
+                </section>
             </div>
         </div>
-    </div>
-
-    <!-- Indicador de carga global -->
-    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Cargando...</span>
-        </div>
-        <p class="mt-2">Procesando...</p>
-    </div>
+    </main>
 
     <!-- Notificaciones Toast -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Scripts -->
     <!-- jQuery -->
@@ -344,85 +658,187 @@
         // Auto-resize textarea y funciones auxiliares
         document.addEventListener('DOMContentLoaded', function() {
             const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
             
-            // Auto-resize textarea
-            if (messageInput) {
-                messageInput.addEventListener('input', function() {
-                    this.style.height = 'auto';
-                    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-                });
+            // Initialize accessibility features
+            initializeAccessibility();
+            
+            // Auto-resize textarea y enable/disable send button
+            messageInput.addEventListener('input', function() {
+                // Enable/disable send button based on input
+                sendButton.disabled = this.value.trim().length === 0;
+                
+                // Auto-resize functionality can be added here if converting to textarea
+                announceToScreenReader('Texto actualizado en el campo de mensaje');
+            });
 
-                // Send on Enter
-                messageInput.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        document.getElementById('sendButton').click();
+            // Enhanced keyboard navigation
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!sendButton.disabled) {
+                        sendMessage();
                     }
-                });
+                }
+            });
 
-                // Focus on input
-                messageInput.focus();
-            }
+            // Focus management
+            messageInput.focus();
         });
 
-        // Smooth scrolling to bottom
-        function scrollToBottom() {
-            const messagesContainer = document.getElementById('chat-messages');
-            if (messagesContainer) {
-                messagesContainer.scrollTo({
-                    top: messagesContainer.scrollHeight,
-                    behavior: 'smooth'
-                });
+        // Initialize accessibility features
+        function initializeAccessibility() {
+            // Add skip link for keyboard navigation
+            const skipLink = document.createElement('a');
+            skipLink.href = '#messageInput';
+            skipLink.className = 'sr-only sr-only-focusable';
+            skipLink.textContent = 'Saltar a entrada de mensaje';
+            skipLink.style.cssText = `
+                position: absolute;
+                top: -40px;
+                left: 6px;
+                background: var(--primary-blue);
+                color: white;
+                padding: 8px;
+                text-decoration: none;
+                border-radius: 4px;
+                z-index: 10000;
+            `;
+            skipLink.addEventListener('focus', function() {
+                this.style.top = '6px';
+            });
+            skipLink.addEventListener('blur', function() {
+                this.style.top = '-40px';
+            });
+            document.body.prepend(skipLink);
+
+            // Enhanced keyboard navigation for chat messages
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.setAttribute('tabindex', '0');
+            
+            // Live region for announcements
+            const liveRegion = document.createElement('div');
+            liveRegion.id = 'liveRegion';
+            liveRegion.setAttribute('aria-live', 'polite');
+            liveRegion.setAttribute('aria-atomic', 'true');
+            liveRegion.className = 'sr-only';
+            document.body.appendChild(liveRegion);
+        }
+
+        // Screen reader announcements
+        function announceToScreenReader(message) {
+            const liveRegion = document.getElementById('liveRegion');
+            if (liveRegion) {
+                liveRegion.textContent = message;
+                setTimeout(() => {
+                    liveRegion.textContent = '';
+                }, 1000);
             }
         }
 
-        // Hide welcome message when first message is sent
-        function hideWelcomeMessage() {
-            const welcomeMsg = document.getElementById('welcomeMessage');
-            if (welcomeMsg) {
-                welcomeMsg.style.display = 'none';
-            }
+        // Enhanced loading states - DISABLED for audio processing
+        function showLoading(message = 'Procesando tu consulta...') {
+            // Disabled to prevent loading overlay during audio processing
+            console.log('Loading requested:', message);
+            return;
         }
 
-        // Enhanced notification system
-        function showNotification(message, type = 'info') {
-            const toastContainer = document.getElementById('toastContainer');
+        function hideLoading() {
+            // Disabled to prevent loading overlay during audio processing
+            console.log('Hide loading requested');
+            return;
+        }
+
+        // Enhanced toast notifications
+        function showToast(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('toastContainer');
             const toastId = 'toast-' + Date.now();
             
             const iconMap = {
-                'success': 'fa-check-circle',
-                'error': 'fa-exclamation-circle',
-                'warning': 'fa-exclamation-triangle',
-                'info': 'fa-info-circle'
+                'success': 'fas fa-check-circle',
+                'error': 'fas fa-exclamation-triangle',
+                'warning': 'fas fa-exclamation-circle',
+                'info': 'fas fa-info-circle'
             };
+
+            const titleMap = {
+                'success': 'Éxito',
+                'error': 'Error',
+                'warning': 'Advertencia',
+                'info': 'Información'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.id = toastId;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
             
-            const toastHtml = `
-                <div class="toast" id="${toastId}" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
-                    <div class="toast-header bg-${type} text-white">
-                        <i class="fas ${iconMap[type]} me-2"></i>
-                        <strong class="me-auto">SIF-GPT</strong>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-                    </div>
-                    <div class="toast-body">
-                        ${message}
-                    </div>
+            toast.innerHTML = `
+                <div class="toast-header">
+                    <i class="${iconMap[type]} me-2" aria-hidden="true"></i>
+                    <strong class="me-auto">${titleMap[type]}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Cerrar notificación"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
                 </div>
             `;
             
-            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            container.appendChild(toast);
             
-            const toast = new bootstrap.Toast(document.getElementById(toastId));
-            toast.show();
+            const bsToast = new bootstrap.Toast(toast, {
+                autohide: true,
+                delay: duration
+            });
             
-            document.getElementById(toastId).addEventListener('hidden.bs.toast', function() {
-                this.remove();
+            bsToast.show();
+            announceToScreenReader(`${titleMap[type]}: ${message}`);
+            
+            // Remove from DOM after hiding
+            toast.addEventListener('hidden.bs.toast', function() {
+                container.removeChild(toast);
             });
         }
 
-        // Función para mostrar/ocultar loading
-        function showLoading(show) {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                overlay.style.display = show ? 'flex' : 'none';
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.error('Error global:', e.error);
+            showToast('Ha ocurrido un error inesperado. Por favor, intenta nuevamente.', 'error');
+        });
+
+        // Enhanced button states
+        function setButtonState(buttonId, state, text = null) {
+            const button = document.getElementById(buttonId);
+            const textSpan = button.querySelector('.btn-text');
+            
+            button.classList.remove('recording', 'processing');
+            button.disabled = false;
+            
+            switch(state) {
+                case 'recording':
+                    button.classList.add('recording');
+                    if (textSpan) textSpan.textContent = 'Grabando...';
+                    button.setAttribute('aria-label', 'Detener grabación de audio');
+                    break;
+                case 'processing':
+                    button.classList.add('processing');
+                    button.disabled = true;
+                    if (textSpan) textSpan.textContent = 'Procesando...';
+                    button.setAttribute('aria-label', 'Procesando audio');
+                    break;
+                case 'disabled':
+                    button.disabled = true;
+                    break;
+                default:
+                    if (textSpan && text) textSpan.textContent = text;
+                    if (buttonId === 'micButton') {
+                        button.setAttribute('aria-label', 'Grabar mensaje de audio');
+                    } else if (buttonId === 'sendButton') {
+                        button.setAttribute('aria-label', 'Enviar mensaje o consulta');
+                    }
             }
+        }
+    </script>
 </html>

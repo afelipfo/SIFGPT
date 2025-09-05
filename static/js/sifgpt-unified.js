@@ -42,12 +42,65 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inicializar solo componentes esenciales
     initializeChat();
     initializeAudio();
+    initializeEnhancedUI();
     
     console.log('✅ SIF-GPT iniciado correctamente');
 });
 
 // ============================================================================
-// INICIALIZACIÓN DE COMPONENTES
+// INICIALIZACIÓN DE COMPONENTES MEJORADOS
+// ============================================================================
+
+/**
+ * Inicializa las mejoras de UI/UX y accesibilidad
+ */
+function initializeEnhancedUI() {
+    console.log('🎨 Inicializando UI mejorada...');
+    
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    
+    // Validación inicial del botón enviar
+    sendButton.disabled = true;
+    
+    // Eventos de entrada mejorados
+    messageInput.addEventListener('input', function() {
+        const hasText = this.value.trim().length > 0;
+        sendButton.disabled = !hasText;
+        
+        // Feedback visual mejorado
+        if (hasText) {
+            sendButton.classList.add('ready');
+        } else {
+            sendButton.classList.remove('ready');
+        }
+    });
+    
+    // Mejoras de navegación por teclado
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey && !sendButton.disabled) {
+            e.preventDefault();
+            sendMessage();
+        }
+        
+        // Accesibilidad: Escape para limpiar
+        if (e.key === 'Escape') {
+            this.value = '';
+            sendButton.disabled = true;
+            sendButton.classList.remove('ready');
+            if (typeof announceToScreenReader === 'function') {
+                announceToScreenReader('Campo de mensaje limpiado');
+            }
+        }
+    });
+    
+    // Focus inicial
+    setTimeout(() => {
+        messageInput.focus();
+    }, 100);
+    
+    console.log('✅ UI mejorada inicializada');
+}
 // ============================================================================
 
 function initializeChat() {
@@ -93,7 +146,7 @@ function sendMessage() {
     messageInput.value = '';
     
     // Mostrar indicador de carga
-    showLoading(true);
+    showLoadingIndicator(true);
     
     // Enviar mensaje al servidor con session_id para contexto
     axios.post(API_ENDPOINTS.pqrs.processText, {
@@ -112,7 +165,7 @@ function sendMessage() {
         addMessageToChat('Error de conexión. Por favor, intenta de nuevo.', 'bot');
     })
     .finally(() => {
-        showLoading(false);
+        showLoadingIndicator(false);
     });
 }
 
@@ -146,17 +199,84 @@ function toggleRecording() {
 }
 
 function startRecording() {
-    navigator.mediaDevices.getUserMedia({ audio: true })
+    console.log('🎤 Iniciando grabación de audio...');
+    
+    // Enhanced UI feedback
+    if (typeof setButtonState === 'function') {
+        setButtonState('micButton', 'recording');
+    } else {
+        const micButton = document.getElementById('micButton');
+        micButton.classList.add('recording');
+        micButton.innerHTML = '<i class="fas fa-stop" aria-hidden="true"></i><span class="btn-text">Detener</span>';
+    }
+    
+    // Accessibility announcement
+    if (typeof announceToScreenReader === 'function') {
+        announceToScreenReader('Grabación de audio iniciada');
+    }
+    
+    navigator.mediaDevices.getUserMedia({ 
+        audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            sampleRate: 44100
+        } 
+    })
         .then(stream => {
-            mediaRecorder = new MediaRecorder(stream);
+            console.log('✅ Acceso al micrófono obtenido');
+            
+            mediaRecorder = new MediaRecorder(stream, {
+                mimeType: 'audio/webm;codecs=opus'
+            });
             audioChunks = [];
             
             mediaRecorder.ondataavailable = (event) => {
-                audioChunks.push(event.data);
+                if (event.data.size > 0) {
+                    audioChunks.push(event.data);
+                    console.log('📊 Chunk de audio recibido:', event.data.size, 'bytes');
+                }
             };
             
             mediaRecorder.onstop = () => {
+                console.log('⏹️ Grabación detenida, procesando chunks...');
+                console.log('📝 Total chunks:', audioChunks.length);
+                
+                // Reset button state
+                if (typeof setButtonState === 'function') {
+                    setButtonState('micButton', 'processing');
+                } else {
+                    const micButton = document.getElementById('micButton');
+                    micButton.classList.remove('recording');
+                    micButton.innerHTML = '<i class="fas fa-microphone" aria-hidden="true"></i><span class="btn-text">Procesando...</span>';
+                    micButton.disabled = true;
+                }
+                
+                if (audioChunks.length === 0) {
+                    console.error('❌ No se capturó audio');
+                    showEnhancedNotification('No se capturó audio. Intenta de nuevo.', 'warning');
+                    resetMicButton();
+                    return;
+                }
+                
                 const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                console.log('🎵 Audio blob creado:', {
+                    size: audioBlob.size,
+                    type: audioBlob.type
+                });
+                
+                if (audioBlob.size === 0) {
+                    console.error('❌ El audio capturado está vacío');
+                    showEnhancedNotification('El audio capturado está vacío. Intenta de nuevo.', 'warning');
+                    resetMicButton();
+                    return;
+                }
+                
+                // Accessibility announcement
+                if (typeof announceToScreenReader === 'function') {
+                    announceToScreenReader('Audio capturado, enviando para procesamiento');
+                }
+                
                 sendAudioToServer(audioBlob);
             };
             
@@ -174,58 +294,137 @@ function startRecording() {
             showNotification('Grabando audio...', 'info');
         })
         .catch(error => {
-            console.error('Error accediendo al micrófono:', error);
-            showNotification('Error al acceder al micrófono', 'error');
+            console.error('❌ Error accediendo al micrófono:', error);
+            let errorMessage = 'Error al acceder al micrófono';
+            
+            if (error.name === 'NotAllowedError') {
+                errorMessage = 'Permiso de micrófono denegado. Por favor, permite el acceso al micrófono.';
+            } else if (error.name === 'NotFoundError') {
+                errorMessage = 'No se encontró micrófono. Verifica que tengas un micrófono conectado.';
+            } else if (error.name === 'NotReadableError') {
+                errorMessage = 'El micrófono está siendo usado por otra aplicación.';
+            }
+            
+            showNotification(errorMessage, 'error');
         });
 }
 
 function stopRecording() {
+    console.log('⏹️ Deteniendo grabación...');
+    
     if (mediaRecorder && isRecording) {
         mediaRecorder.stop();
         isRecording = false;
         
-        // Actualizar UI
-        const micButton = document.getElementById('micButton');
-        if (micButton) {
-            micButton.classList.remove('recording');
-            micButton.innerHTML = '<i class="fas fa-microphone"></i>';
-            micButton.title = 'Grabar Audio';
+        // Detener todas las pistas de audio
+        mediaRecorder.stream.getTracks().forEach(track => {
+            track.stop();
+            console.log('🔇 Pista de audio detenida');
+        });
+        
+        // Enhanced UI feedback
+        if (typeof setButtonState === 'function') {
+            setButtonState('micButton', 'processing');
+        } else {
+            const micButton = document.getElementById('micButton');
+            if (micButton) {
+                micButton.classList.remove('recording');
+                micButton.innerHTML = '<i class="fas fa-microphone" aria-hidden="true"></i><span class="btn-text">Procesando...</span>';
+                micButton.title = 'Procesando audio';
+                micButton.disabled = true;
+            }
         }
         
-        showNotification('Audio grabado, procesando...', 'info');
+        // Enhanced notification
+        showEnhancedNotification('Audio grabado correctamente, procesando transcripción...', 'info');
+        
+        // Accessibility announcement
+        if (typeof announceToScreenReader === 'function') {
+            announceToScreenReader('Grabación detenida, procesando audio');
+        }
+        
+        console.log('✅ Grabación detenida correctamente');
+    } else {
+        console.warn('⚠️ No hay grabación activa para detener');
+        resetMicButton();
     }
 }
 
+// Helper function to reset microphone button
+function resetMicButton() {
+    if (typeof setButtonState === 'function') {
+        setButtonState('micButton', 'default', 'Grabar');
+    } else {
+        const micButton = document.getElementById('micButton');
+        if (micButton) {
+            micButton.classList.remove('recording', 'processing');
+            micButton.innerHTML = '<i class="fas fa-microphone" aria-hidden="true"></i><span class="btn-text">Grabar</span>';
+            micButton.title = 'Grabar audio';
+            micButton.disabled = false;
+        }
+    }
+    isRecording = false;
+}
+
 function sendAudioToServer(audioBlob) {
+    console.log('📤 Enviando audio al servidor...', {
+        size: audioBlob.size,
+        type: audioBlob.type,
+        sessionId: sessionId
+    });
+    
     const formData = new FormData();
     formData.append('audio', audioBlob, 'recording.wav');
+    formData.append('session_id', sessionId);  // Incluir session_id para contexto
     
-    showLoading(true);
+    // Mostrar mensaje de procesamiento en el chat
+    addMessageToChat('🎤 Procesando audio...', 'bot');
     
     axios.post(API_ENDPOINTS.pqrs.processAudio, formData, {
         headers: {
             'Content-Type': 'multipart/form-data'
-        }
+        },
+        timeout: 30000  // 30 segundos de timeout
     })
     .then(response => {
+        console.log('✅ Respuesta del servidor:', response.data);
+        
         if (response.data.success) {
-            // Agregar transcripción al chat
-            addMessageToChat(`🎤 **Audio transcrito:** ${response.data.transcript}`, 'bot');
+            // Agregar transcripción al chat (solo el texto, sin prefijo)
+            if (response.data.transcript) {
+                addMessageToChat(response.data.transcript, 'user');
+            }
             
             // Si hay respuesta del sistema, mostrarla
             if (response.data.response) {
                 addMessageToChat(response.data.response, 'bot');
             }
+            
+            showNotification('Audio procesado correctamente', 'success');
         } else {
-            addMessageToChat('Error al procesar el audio', 'bot');
+            const errorMsg = response.data.error || 'Error desconocido al procesar el audio';
+            console.error('❌ Error del servidor:', errorMsg);
+            addMessageToChat(`Error: ${errorMsg}`, 'bot');
+            showNotification('Error al procesar el audio', 'error');
         }
     })
     .catch(error => {
-        console.error('Error procesando audio:', error);
-        addMessageToChat('Error al procesar el audio', 'bot');
-    })
-    .finally(() => {
-        showLoading(false);
+        console.error('❌ Error procesando audio:', error);
+        
+        let errorMessage = 'Error de conexión al procesar el audio';
+        if (error.response) {
+            // Error de respuesta del servidor
+            errorMessage = error.response.data?.error || `Error del servidor (${error.response.status})`;
+        } else if (error.request) {
+            // Error de red
+            errorMessage = 'Error de conexión con el servidor';
+        } else {
+            // Error de configuración
+            errorMessage = 'Error al preparar la solicitud';
+        }
+        
+        addMessageToChat(`Error: ${errorMessage}`, 'bot');
+        showNotification('Error al procesar el audio', 'error');
     });
 }
 
@@ -243,7 +442,7 @@ function buscarHistorico() {
         return;
     }
     
-    showLoading(true);
+    showLoadingIndicator(true);
     
     let endpoint = '';
     let data = {};
@@ -258,7 +457,7 @@ function buscarHistorico() {
                 console.error('Error buscando por radicado:', error);
                 showNotification('Error en la búsqueda', 'error');
             })
-            .finally(() => showLoading(false));
+            .finally(() => showLoadingIndicator(false));
         return;
     }
     
@@ -278,7 +477,7 @@ function buscarHistorico() {
             console.error('Error en búsqueda:', error);
             showNotification('Error en la búsqueda', 'error');
         })
-        .finally(() => showLoading(false));
+        .finally(() => showLoadingIndicator(false));
 }
 
 function displayHistoricoResults(data, tipo) {
@@ -344,7 +543,7 @@ function busquedaAvanzada() {
         return;
     }
     
-    showLoading(true);
+    showLoadingIndicator(true);
     
     const filtros = {
         texto: texto,
@@ -366,7 +565,7 @@ function busquedaAvanzada() {
             console.error('Error en búsqueda avanzada:', error);
             showNotification('Error en la búsqueda avanzada', 'error');
         })
-        .finally(() => showLoading(false));
+        .finally(() => showLoadingIndicator(false));
 }
 
 function displayAdvancedResults(data) {
@@ -450,7 +649,7 @@ function viewLogs() {
 // FUNCIONES DE UTILIDAD
 // ============================================================================
 
-function showLoading(show) {
+function showLoadingIndicator(show) {
     // Implementar indicador de carga si es necesario
     if (show) {
         console.log('🔄 Cargando...');
@@ -459,17 +658,39 @@ function showLoading(show) {
     }
 }
 
+// Enhanced notification system
+function showEnhancedNotification(message, type = 'info', duration = 5000) {
+    // Try to use the enhanced toast function from HTML if available
+    if (typeof showToast === 'function') {
+        return showToast(message, type, duration);
+    }
+    
+    // Fallback to original notification
+    return showNotification(message, type);
+}
+
 function showNotification(message, type = 'info') {
     // Crear notificación toast
     const toast = document.createElement('div');
     toast.className = `alert alert-${getAlertType(type)} alert-dismissible fade show position-fixed`;
-    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: var(--shadow-lg); border-radius: 12px;';
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'polite');
+    
     toast.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="d-flex align-items-center">
+            <i class="${getIconForType(type)} me-2" aria-hidden="true"></i>
+            <div class="flex-grow-1">${message}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar notificación"></button>
+        </div>
     `;
     
     document.body.appendChild(toast);
+    
+    // Accessibility announcement
+    if (typeof announceToScreenReader === 'function') {
+        announceToScreenReader(message);
+    }
     
     // Auto-remover después de 5 segundos
     setTimeout(() => {
@@ -487,6 +708,16 @@ function getAlertType(type) {
         'info': 'info'
     };
     return alertTypes[type] || 'info';
+}
+
+function getIconForType(type) {
+    const iconTypes = {
+        'success': 'fas fa-check-circle',
+        'error': 'fas fa-exclamation-triangle', 
+        'warning': 'fas fa-exclamation-circle',
+        'info': 'fas fa-info-circle'
+    };
+    return iconTypes[type] || 'fas fa-info-circle';
 }
 
 // ============================================================================
