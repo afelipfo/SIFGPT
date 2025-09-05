@@ -44,7 +44,8 @@ class PQRSOrchestratorService:
             )
             self.historico_service = HistoricoQueryService(self.pqrs_repository)
             
-            logger.info("Orquestador de PQRS inicializado exitosamente")
+            # Solo log esencial
+            logger.info("🚀 Sistema PQRS inicializado correctamente")
             
         except Exception as e:
             logger.error(f"Error al inicializar orquestador de PQRS: {e}")

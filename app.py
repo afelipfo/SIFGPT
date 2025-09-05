@@ -324,8 +324,8 @@ def test_advanced_historico():
         }), 500
 
 if __name__ == '__main__':
-    logger.info("🚀 Iniciando aplicación SIF-GPT unificada...")
-    logger.info("📱 Frontend unificado disponible en: http://localhost:5000")
-    logger.info("🔌 API disponible en: http://localhost:5000/api")
-    logger.info("🧪 Tests disponibles en: http://localhost:5000/test")
+    print("\n" + "="*60)
+    print("� SIF-GPT - Sistema de PQRS")
+    print("� Aplicación disponible en: http://localhost:5000")
+    print("="*60 + "\n")
     app.run(debug=False, host='0.0.0.0', port=5000)

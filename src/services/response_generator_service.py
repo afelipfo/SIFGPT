@@ -15,7 +15,7 @@ class ResponseGeneratorService:
         self.prompt_repository = prompt_repository
         self.pqrs_repository = pqrs_repository
         self.model = config.OPENAI_MODEL
-        logger.info("Servicio de generación de respuestas inicializado")
+        # logger.info("Servicio de generación de respuestas inicializado")
     
     def generate_response(self, pqrs_data: PQRSData, transcription: str) -> str:
         """Genera una respuesta apropiada para la PQRS usando IA"""

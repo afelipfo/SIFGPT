@@ -14,7 +14,7 @@ class PQRSClassifierService:
         self.openai_client = openai_client
         self.prompt_repository = prompt_repository
         self.model = config.OPENAI_MODEL
-        logger.info("Servicio de clasificación de PQRS inicializado")
+        # logger.info("Servicio de clasificación de PQRS inicializado")
     
     def classify_pqrs(self, transcription: str) -> PQRSData:
         """Clasifica una PQRS basada en la transcripción"""

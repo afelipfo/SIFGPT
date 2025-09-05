@@ -28,7 +28,8 @@ class OpenAIWhisperStrategy(TranscriptionStrategy):
         """Inicializa la estrategia OpenAI Whisper"""
         self.client = OpenAI(api_key=api_key)
         self.model = model
-        logger.info(f"Estrategia OpenAI Whisper inicializada con modelo: {model}")
+        # Reducir logging
+        pass  # logger.info(f"Estrategia OpenAI Whisper inicializada con modelo: {model}")
     
     def transcribe(self, audio_file) -> str:
         """Transcribe usando OpenAI Whisper"""
@@ -128,7 +129,7 @@ class AudioService:
         """Inicializa el servicio de audio con una estrategia"""
         self.strategy = strategy
         self.audio_extensions = config.AUDIO_EXTENSIONS
-        logger.info("Servicio de audio inicializado")
+        # logger.info("Servicio de audio inicializado")
     
     def get_audio_files(self, folder_path: str) -> List[str]:
         """Obtiene lista de archivos de audio en un directorio"""

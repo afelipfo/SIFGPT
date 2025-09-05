@@ -18,7 +18,7 @@ class HistoricoQueryService:
     def __init__(self, pqrs_repository: PQRSRepository):
         """Inicializa el servicio de consultas históricas unificado"""
         self.pqrs_repository = pqrs_repository
-        logger.info("Servicio unificado de consultas históricas inicializado")
+        # logger.info("Servicio unificado de consultas históricas inicializado")
     
     def consultar_por_radicado(self, numero_radicado: str) -> Dict[str, Any]:
         """Consulta información de una PQRS por número de radicado con información enriquecida"""

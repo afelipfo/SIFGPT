@@ -306,6 +306,9 @@ function startRecording() {
             }
             
             showNotification(errorMessage, 'error');
+            
+            // Resetear botón del micrófono en caso de error de acceso
+            resetMicButton();
         });
 }
 
@@ -335,10 +338,7 @@ function stopRecording() {
             }
         }
         
-        // Enhanced notification
-        showEnhancedNotification('Audio grabado correctamente, procesando transcripción...', 'info');
-        
-        // Accessibility announcement
+        // Accessibility announcement (solo para lectores de pantalla)
         if (typeof announceToScreenReader === 'function') {
             announceToScreenReader('Grabación detenida, procesando audio');
         }
@@ -352,16 +352,20 @@ function stopRecording() {
 
 // Helper function to reset microphone button
 function resetMicButton() {
-    if (typeof setButtonState === 'function') {
-        setButtonState('micButton', 'default', 'Grabar');
-    } else {
-        const micButton = document.getElementById('micButton');
-        if (micButton) {
-            micButton.classList.remove('recording', 'processing');
-            micButton.innerHTML = '<i class="fas fa-microphone" aria-hidden="true"></i><span class="btn-text">Grabar</span>';
-            micButton.title = 'Grabar audio';
-            micButton.disabled = false;
-        }
+    console.log('🔄 Reseteando botón del micrófono...');
+    const micButton = document.getElementById('micButton');
+    if (micButton) {
+        // Limpiar todas las clases y estados
+        micButton.classList.remove('recording', 'processing');
+        micButton.innerHTML = '<i class="fas fa-microphone" aria-hidden="true"></i><span class="btn-text">Grabar</span>';
+        micButton.title = 'Grabar audio';
+        micButton.disabled = false;
+        
+        // Forzar actualización visual
+        micButton.style.opacity = '1';
+        micButton.style.pointerEvents = 'auto';
+        
+        console.log('✅ Botón del micrófono reseteado correctamente');
     }
     isRecording = false;
 }
@@ -401,11 +405,17 @@ function sendAudioToServer(audioBlob) {
             }
             
             showNotification('Audio procesado correctamente', 'success');
+            
+            // Resetear botón del micrófono para permitir nueva grabación
+            resetMicButton();
         } else {
             const errorMsg = response.data.error || 'Error desconocido al procesar el audio';
             console.error('❌ Error del servidor:', errorMsg);
             addMessageToChat(`Error: ${errorMsg}`, 'bot');
             showNotification('Error al procesar el audio', 'error');
+            
+            // Resetear botón del micrófono incluso en caso de error
+            resetMicButton();
         }
     })
     .catch(error => {
@@ -425,6 +435,9 @@ function sendAudioToServer(audioBlob) {
         
         addMessageToChat(`Error: ${errorMessage}`, 'bot');
         showNotification('Error al procesar el audio', 'error');
+        
+        // Resetear botón del micrófono incluso en caso de error de conexión
+        resetMicButton();
     });
 }
 

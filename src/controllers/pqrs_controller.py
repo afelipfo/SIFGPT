@@ -11,7 +11,8 @@ pqrs_bp = Blueprint('pqrs', __name__)
 try:
     openai_api_key = config.OPENAI_API_KEY or 'test-key-for-development'
     pqrs_orchestrator = PQRSOrchestratorService(openai_api_key)
-    logger.info("Controlador de PQRS inicializado exitosamente")
+    # Solo log esencial para controladores
+    pass  # logger.info("Controlador de PQRS inicializado exitosamente")
 except Exception as e:
     logger.error(f"Error al inicializar controlador de PQRS: {e}")
     pqrs_orchestrator = None
