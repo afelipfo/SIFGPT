@@ -1,139 +1,174 @@
-# TUNRAG - Sistema RAG para Consulta de PQRS
+# SIF-GPT - Sistema Inteligente de PQRS para la Secretaría de Infraestructura Física
 
-Sistema de Recuperación Aumentada de Información (RAG) especializado en la consulta y gestión de PQRS (Peticiones, Quejas, Reclamos, Sugerencias y Denuncias) almacenadas en el histórico de la Alcaldía de Medellín.
+**SIF-GPT** es un asistente virtual inteligente desarrollado para la **Secretaría de Infraestructura Física de la Alcaldía de Medellín**. El sistema combina procesamiento de lenguaje natural con inteligencia artificial para optimizar la gestión y consulta de PQRS (Peticiones, Quejas, Reclamos, Sugerencias y Denuncias).
+
+## 🎯 Propósito del Sistema
+
+SIF-GPT fue diseñado para automatizar y mejorar la gestión de PQRS en la Secretaría de Infraestructura Física, proporcionando:
+
+- **Consultas inteligentes** sobre un histórico de **10,617 registros** de PQRS
+- **Procesamiento automático** de solicitudes por texto y audio
+- **Clasificación inteligente** de PQRS según categorías institucionales
+- **Generación de respuestas** contextualizadas y personalizadas
+- **Interfaz web moderna** para funcionarios y ciudadanos
 
 ## 🚀 Características Principales
 
-- **Sistema RAG Unificado**: Consultas inteligentes sobre histórico de PQRS
-- **Procesamiento de Audio**: Transcripción y análisis de PQRS por voz
-- **Clasificación Automática**: Categorización inteligente de PQRS usando IA
-- **API REST Completa**: Endpoints unificados para todas las funcionalidades
-- **Interfaz Web Moderna**: Frontend responsive y fácil de usar
-- **Logging Centralizado**: Sistema de logs robusto para monitoreo
+### 🧠 Inteligencia Artificial Integrada
+- **GPT-4** para comprensión y generación de respuestas naturales
+- **Whisper** para transcripción automática de audio
+- **Análisis semántico** para clasificación automática de PQRS
+- **Memoria conversacional** para mantener contexto entre interacciones
 
-## 🏗️ Arquitectura del Sistema Optimizada
+### 📊 Gestión Avanzada de Datos
+- Base de datos histórica de **10,617 PQRS** en formato Excel
+- **5 categorías principales**: Solicitud de Interés Particular, Trámite, Solicitud de Interés General, Solicitud de Información, Tutela
+- **Estados de seguimiento**: EVACUADO, SIN RESPUESTA, DEVOLUCIÓN BACK OFFICE, SOLICITUD DE PRÓRROGA
+- **Análisis por barrios** y unidades especializadas de Medellín
 
-### Separación entre Arquitectura y Orquestación
+### 🎤 Procesamiento Multimodal
+- **Transcripción de audio** en múltiples formatos (MP3, WAV, MP4, etc.)
+- **Procesamiento de texto** directo
+- **Análisis automático** del contenido para clasificación
 
-#### **Capa de Arquitectura (Estructura Base)**
+### 🌐 Interfaz Web Completa
+- **Diseño corporativo** con identidad visual de la Alcaldía de Medellín
+- **Responsive design** compatible con dispositivos móviles
+- **Accesibilidad** optimizada para usuarios diversos
+
+## 🏗️ Arquitectura del Sistema
+
 ```
 SIFGPT/
-├── src/                          # Código fuente principal (100% funcional)
-│   ├── controllers/              # Controladores REST por dominio
+├── src/                          # Código fuente principal
+│   ├── controllers/              # Controladores REST
 │   │   ├── historico_controller.py    # Endpoints de consulta histórica
 │   │   └── pqrs_controller.py         # Endpoints de procesamiento PQRS
-│   ├── services/                 # Servicios de negocio especializados
-│   │   ├── audio_service.py           # Transcripción de audio
+│   ├── services/                 # Servicios de negocio
+│   │   ├── audio_service.py           # Transcripción de audio (Whisper)
 │   │   ├── historico_query_service.py # Consultas inteligentes de histórico
-│   │   ├── pqrs_classifier_service.py # Clasificación automática de PQRS
-│   │   ├── response_generator_service.py # Generación de respuestas contextuales
-│   │   └── pqrs_orchestrator_service.py # ⭐ ORQUESTADOR PRINCIPAL
+│   │   ├── pqrs_classifier_service.py # Clasificación automática IA
+│   │   ├── response_generator_service.py # Generación de respuestas GPT-4
+│   │   └── pqrs_orchestrator_service.py # Orquestador principal
 │   ├── models/                   # Modelos de datos tipados
-│   │   └── pqrs_model.py              # PQRSData, PQRSHistorico, AudioTranscription
-│   ├── repositories/             # Acceso y gestión de datos
-│   │   └── pqrs_repository.py         # PQRSRepository, PromptRepository
+│   │   └── pqrs_model.py              # PQRSData, AudioTranscription
+│   ├── repositories/             # Acceso a datos
+│   │   └── pqrs_repository.py         # Gestión de Excel y prompts
 │   ├── utils/                    # Utilidades del sistema
-│   │   └── logger.py                  # Sistema de logging centralizado
-│   └── config/                   # Configuración centralizada
-│       └── config.py                  # Configuración unificada del sistema
-├── templates/                    # Frontend optimizado
-│   └── index.html                     # Interfaz web unificada
-├── static/                       # Archivos estáticos optimizados
-│   ├── css/styles.css                 # Estilos unificados y responsivos
-│   ├── js/sifgpt-unified.js          # JavaScript unificado (sin duplicados)
+│   │   └── logger.py                  # Sistema de logging
+│   └── config/                   # Configuración
+│       └── config.py                  # Config centralizada
+├── templates/                    # Frontend web
+│   └── index.html                     # Interfaz principal SIF-GPT
+├── static/                       # Recursos estáticos
+│   ├── css/styles.css                 # Estilos corporativos
+│   ├── js/sifgpt-unified.js          # JavaScript de la aplicación
 │   └── images/logo-medellin.png       # Logo oficial
-├── input/                        # Datos de entrada (solo utilizados)
-│   ├── audios/                        # Directorio para procesamiento temporal de audio
-│   │   └── .gitkeep                   # Mantiene la carpeta en el repositorio
-│   ├── historico/                     # Archivos de histórico activos
-│   │   └── historico2.xlsx            # Histórico principal en formato Excel
-│   ├── prompts/                       # Prompts de IA (solo utilizados)
-│   │   ├── categorias.txt, entidades.txt, estructura_json.txt
-│   │   ├── faqs.txt, respuestas_faqs.txt
-│   │   └── sys_prompt.txt, sys_prompt_faqs.txt, sys_prompt_solucion.txt
+├── input/                        # Datos del sistema
+│   ├── audios/                        # Archivos de audio temporales
+│   ├── historico/                     # Base de datos PQRS
+│   │   └── historico2.xlsx            # 10,617 registros históricos
+│   ├── prompts/                       # Prompts de IA especializados
+│   │   ├── sys_prompt.txt             # Personalidad de SIF-GPT
+│   │   ├── categorias.txt             # Categorías de PQRS
+│   │   └── ...                        # Otros prompts especializados
 │   └── plantillas_solucion/           # Plantillas de respuesta
-│       └── plantilla.txt              # Plantilla base de respuestas
-├── logs/                         # Sistema de logging
-│   └── tunrag.log                     # Logs de la aplicación
-├── app.py                        # Aplicación principal Flask
-├── requirements.txt              # Dependencias optimizadas
-├── Dockerfile                    # Configuración Docker
-└── docker-compose.yml            # Orquestación de contenedores
+├── app.py                        # Aplicación Flask principal
+├── requirements.txt              # Dependencias Python
+├── Dockerfile                    # Contenedor Docker
+└── docker-compose.yml            # Orquestación de servicios
 ```
 
-#### **Capa de Orquestación (Flujo de Datos)**
-- **PQRSOrchestratorService**: Coordina todos los servicios especializados
-- **Controllers**: Enrutan requests HTTP a servicios apropiados
-- **Blueprints**: Organizan endpoints por funcionalidad (PQRS vs Histórico)
+### 🔄 Flujo de Procesamiento
+1. **Recepción**: El sistema recibe PQRS por texto o audio
+2. **Transcripción**: Si es audio, Whisper convierte a texto
+3. **Clasificación**: GPT-4 analiza y categoriza automáticamente
+4. **Consulta**: Se buscan casos similares en el histórico
+5. **Respuesta**: Se genera una respuesta contextualizada
+6. **Seguimiento**: Se registra la interacción para análisis
 
 ## 🔧 Instalación y Configuración
 
 ### Requisitos Previos
+
 - Python 3.11+
-- OpenAI API Key
-- Dependencias del sistema (ver requirements.txt)
+- OpenAI API Key (para GPT-4 y Whisper)
+- Windows/Linux/macOS
 
 ### Instalación Rápida
 
 1. **Clonar el repositorio**
+
    ```bash
-   git clone <repository-url>
-   cd TUNRAG
+   git clone https://github.com/afelipfo/SIFGPT.git
+   cd SIFGPT
    ```
 
 2. **Instalar dependencias**
+
    ```bash
    pip install -r requirements.txt
    ```
 
 3. **Configurar variables de entorno**
+
    ```bash
-   cp env.example .env
-   # Editar .env con tu OpenAI API Key
+   # Crear archivo .env en la raíz del proyecto
+   OPENAI_API_KEY=tu_api_key_aqui
+   SECRET_KEY=tu_secret_key_aqui
+   DEBUG=True
    ```
 
 4. **Ejecutar la aplicación**
+
    ```bash
    python app.py
    ```
 
+5. **Acceder al sistema**
+   - Abrir navegador en: `http://localhost:5000`
+   - La interfaz SIF-GPT estará disponible
+
 ## 📡 API Endpoints
 
-### Histórico de PQRS (Unificado)
+### 🔍 Consultas de Histórico PQRS
 
-- `POST /api/historico/consulta` - Consulta inteligente
-- `GET /api/historico/radicado/<numero>` - Consulta por radicado
-- `POST /api/historico/buscar/texto` - Búsqueda por texto
-- `POST /api/historico/buscar/nombre` - Búsqueda por nombre
+- `POST /api/historico/consulta` - Consulta inteligente con IA
+- `GET /api/historico/radicado/<numero>` - Consulta por número de radicado
+- `POST /api/historico/buscar/texto` - Búsqueda por contenido de texto
+- `POST /api/historico/buscar/nombre` - Búsqueda por nombre del solicitante
 - `POST /api/historico/consulta-avanzada` - Consulta con filtros múltiples
-- `POST /api/historico/sugerencias` - Sugerencias de búsqueda
-- `GET /api/historico/filtros-disponibles` - Filtros disponibles
-- `GET /api/historico/estadisticas` - Estadísticas del histórico
-- `GET /api/historico/ayuda` - Ayuda del sistema
-- `GET /api/historico/resumen` - Resumen del histórico
+- `POST /api/historico/sugerencias` - Sugerencias inteligentes de búsqueda
+- `GET /api/historico/filtros-disponibles` - Filtros disponibles en el sistema
+- `GET /api/historico/estadisticas` - Estadísticas del histórico PQRS
+- `GET /api/historico/resumen` - Resumen ejecutivo del histórico
 
-### PQRS
+### 📝 Procesamiento de PQRS
 
-- `POST /api/pqrs/procesar-audio` - Procesar PQRS desde audio
-- `POST /api/pqrs/procesar-texto` - Procesar PQRS desde texto
-- `GET /api/pqrs/health` - Estado del servicio
+- `POST /api/pqrs/procesar-audio` - Procesar PQRS desde archivo de audio
+- `POST /api/pqrs/procesar-texto` - Procesar PQRS desde texto directo
+- `GET /api/pqrs/health` - Estado del servicio de procesamiento
 
-### Sistema
+### 🏥 Sistema y Monitoreo
 
-- `GET /` - Interfaz web principal
+- `GET /` - Interfaz web principal de SIF-GPT
 - `GET /api/health` - Estado general del sistema
-- `GET /test/historico` - Pruebas del servicio histórico
-- `GET /test/advanced-historico` - Pruebas de funcionalidades avanzadas
+- `GET /test/historico` - Pruebas del servicio de histórico
+- `GET /test/advanced-historico` - Pruebas avanzadas del sistema
 
-## 🧪 Pruebas
+## 🧪 Verificación del Sistema
 
-Verificar el estado del sistema:
+Para verificar que SIF-GPT está funcionando correctamente:
 
 ```bash
+# Verificar estado general
 curl http://localhost:5000/api/health
-```
 
-Este comando verifica que todos los servicios estén funcionando correctamente.
+# Probar consulta de ejemplo
+curl -X POST http://localhost:5000/api/historico/consulta \
+  -H "Content-Type: application/json" \
+  -d '{"query": "problemas con vías en El Poblado"}'
+```
 
 ## 🚀 Despliegue
 
@@ -141,10 +176,10 @@ Este comando verifica que todos los servicios estén funcionando correctamente.
 
 ```bash
 # Construir imagen
-docker build -t tunrag .
+docker build -t sifgpt .
 
 # Ejecutar contenedor
-docker run -p 5000:5000 --env-file .env tunrag
+docker run -p 5000:5000 --env-file .env sifgpt
 ```
 
 ### Docker Compose
@@ -153,78 +188,123 @@ docker run -p 5000:5000 --env-file .env tunrag
 docker-compose up -d
 ```
 
-## 📊 Funcionalidades del Sistema RAG
+## 📊 Funcionalidades Principales
 
 ### 1. Consultas Inteligentes
-- **Búsqueda por Texto**: Búsqueda semántica en descripciones de PQRS
-- **Búsqueda por Radicado**: Consulta directa por número de radicado
+
+- **Búsqueda Semántica**: Utiliza IA para entender el contexto y la intención
+- **Búsqueda por Radicado**: Consulta directa por número de radicado específico
 - **Búsqueda por Nombre**: Localización por nombre del solicitante
+- **Búsqueda por Texto**: Análisis de contenido en descripciones de PQRS
 
 ### 2. Consultas Avanzadas
-- **Filtros Múltiples**: Combinación de criterios de búsqueda
-- **Ordenamiento**: Resultados ordenados por diferentes campos
-- **Paginación**: Control del número de resultados
-- **Filtros de Fecha**: Búsquedas por rangos temporales
+
+- **Filtros Múltiples**: Combinación de criterios (fecha, estado, barrio, etc.)
+- **Ordenamiento Inteligente**: Resultados priorizados por relevancia
+- **Paginación Optimizada**: Control eficiente de resultados grandes
+- **Filtros Temporales**: Búsquedas por rangos de fechas específicos
 
 ### 3. Análisis de Datos
-- **Estadísticas**: Resúmenes cuantitativos del histórico
-- **Tendencias**: Análisis temporal de PQRS
-- **Clasificación**: Distribución por tipos y estados
-- **Geolocalización**: Análisis por barrios y unidades
+
+- **Estadísticas en Tiempo Real**: Resúmenes cuantitativos actualizados
+- **Análisis por Barrios**: Distribución geográfica de PQRS en Medellín
+- **Análisis por Estados**: Seguimiento de EVACUADO, SIN RESPUESTA, etc.
+- **Tendencias Temporales**: Patrones de solicitudes a lo largo del tiempo
 
 ### 4. Procesamiento de Audio
-- **Transcripción**: Conversión de voz a texto
-- **Clasificación**: Análisis automático del tipo de PQRS
-- **Respuesta Automática**: Generación de respuestas contextuales
 
-## 🔒 Seguridad
+- **Transcripción Automática**: Conversión de voz a texto con Whisper
+- **Clasificación Inteligente**: Análisis automático del tipo de PQRS
+- **Múltiples Formatos**: Soporte para MP3, WAV, MP4, M4A, FLAC, OGG
+- **Respuesta Contextualizada**: Generación automática de respuestas relevantes
 
-- Validación de entrada en todos los endpoints
-- Manejo seguro de archivos de audio
-- Logging de todas las operaciones
-- Configuración de variables de entorno
+### 5. Asistente Virtual SIF-GPT
 
-## 📝 Logging
+- **Personalidad Especializada**: Entrenado específicamente para infraestructura física
+- **Memoria Conversacional**: Mantiene contexto durante toda la sesión
+- **Respuestas Personalizadas**: Basadas en el histórico y contexto específico
+- **Seguimiento Inteligente**: Preguntas de clarificación cuando es necesario
 
-El sistema utiliza un logger centralizado que registra:
-- Operaciones del usuario
-- Errores del sistema
-- Métricas de rendimiento
-- Acceso a datos
+## 🔒 Seguridad y Privacidad
+
+- **Validación de Entrada**: Todos los endpoints validan datos de entrada
+- **Manejo Seguro de Archivos**: Procesamiento temporal de audio sin almacenamiento
+- **Logging Completo**: Registro de todas las operaciones para auditoría
+- **Variables de Entorno**: Configuración segura de API keys
+
+## � Monitoreo y Logging
+
+El sistema incluye logging centralizado que registra:
+
+- **Operaciones de Usuario**: Consultas, búsquedas y procesamientos
+- **Errores del Sistema**: Fallos y excepciones para debugging
+- **Métricas de Rendimiento**: Tiempos de respuesta y uso de recursos
+- **Acceso a Datos**: Consultas al histórico PQRS para auditoría
 
 ## 🤝 Contribución
 
 1. Fork del repositorio
-2. Crear rama para nueva funcionalidad
-3. Implementar cambios
-4. Ejecutar pruebas
-5. Crear Pull Request
+2. Crear rama para nueva funcionalidad (`git checkout -b feature/nueva-funcionalidad`)
+3. Implementar cambios y pruebas
+4. Commit de cambios (`git commit -am 'Agregar nueva funcionalidad'`)
+5. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+6. Crear Pull Request
 
 ## 📄 Licencia
 
-Este proyecto está bajo la licencia MIT. Ver el archivo LICENSE para más detalles.
+Este proyecto es propiedad de la **Alcaldía de Medellín - Secretaría de Infraestructura Física**.
+Desarrollado para uso interno de la administración municipal.
 
-## 🆘 Soporte
+## 🆘 Soporte Técnico
 
-Para soporte técnico o consultas:
-- Crear un issue en el repositorio
-- Contactar al equipo de desarrollo
-- Revisar la documentación de la API
+Para soporte técnico o consultas sobre SIF-GPT:
+
+- **Documentación**: Revisar este README y comentarios en el código
+- **Contacto**: Equipo de desarrollo de la Secretaría de Infraestructura Física
+
+## 📊 Estadísticas del Proyecto
+
+- **Base de Datos**: 10,617 registros históricos de PQRS
+- **Categorías**: 5 tipos principales de PQRS
+- **Estados**: 4+ estados de seguimiento diferentes
+- **Barrios**: Cobertura completa de Medellín
+- **Tecnología**: Flask + OpenAI GPT-4 + Whisper
+- **Idioma**: Español (Colombia)
 
 ## 🔄 Historial de Versiones
 
-### v2.0.0 (Actual)
-- **Unificación completa** de servicios de histórico
-- **Eliminación** de archivos duplicados
-- **Consolidación** de controladores
-- **Sistema de pruebas unificado**
-- **Limpieza** de dependencias no utilizadas
+### v1.0.0 (2024-09-10) - Primera Versión Estable
 
-### v1.0.0
-- Versión inicial del sistema
-- Funcionalidades básicas de PQRS
-- Servicios separados de histórico
+**🎉 Características Principales Implementadas:**
+
+- ✅ **Sistema SIF-GPT Completo**: Asistente virtual especializado para PQRS
+- ✅ **Procesamiento de Audio**: Transcripción automática con Whisper
+- ✅ **Consultas Inteligentes**: Sistema RAG con GPT-4 para búsquedas semánticas
+- ✅ **Base de Datos Histórica**: 10,617 registros de PQRS integrados
+- ✅ **Clasificación Automática**: IA para categorizar PQRS automáticamente
+- ✅ **Interfaz Web Completa**: Frontend corporativo responsive
+- ✅ **API REST Completa**: 15+ endpoints para todas las funcionalidades
+- ✅ **Sistema de Logging**: Monitoreo y auditoría completa
+- ✅ **Configuración Docker**: Despliegue containerizado listo para producción
+
+**🏗️ Arquitectura Implementada:**
+
+- **Orquestador Principal**: PQRSOrchestratorService coordina todos los servicios
+- **Servicios Especializados**: Audio, Clasificación, Generación de Respuestas, Consultas
+- **Controladores REST**: Endpoints organizados por funcionalidad
+- **Repositorios de Datos**: Acceso optimizado a Excel y prompts de IA
+- **Configuración Centralizada**: Gestión unificada de configuración
+
+**📈 Capacidades del Sistema:**
+
+- Procesamiento de 7+ formatos de audio diferentes
+- Consultas en lenguaje natural sobre 10,617 PQRS históricas
+- Clasificación automática en 5 categorías institucionales
+- Análisis por barrios, estados y unidades de Medellín
+- Respuestas contextualizadas y personalizadas
+- Interfaz bilingüe optimizada para funcionarios públicos
 
 ---
 
-**TUNRAG** - Transformando la gestión de PQRS con Inteligencia Artificial
+**SIF-GPT v1.0.0** - Transformando la gestión de PQRS con Inteligencia Artificial  
+*Secretaría de Infraestructura Física - Alcaldía de Medellín*
