@@ -1,3 +1,4 @@
+import os
 from typing import Optional, Dict, Any
 from openai import OpenAI
 from src.utils.logger import logger
@@ -100,7 +101,7 @@ class PQRSOrchestratorService:
             return result
             
         except Exception as e:
-            logger.error(f"Error en procesamiento de PQRS desde audio: {str(e)}", exc_info=True)
+            logger.exception(f"Error en procesamiento de PQRS desde audio: {str(e)}")
             return {
                 "success": False,
                 "error": str(e),
@@ -197,25 +198,138 @@ class PQRSOrchestratorService:
         return False
 
     def _extract_radicado_from_text(self, text: str) -> str:
-        """Extrae número de radicado del texto usando expresiones regulares"""
+        """Extrae número de radicado del texto usando expresiones regulares y procesamiento de números dictados"""
         import re
         
-        # Patrones para detectar radicados
-        patterns = [
+        # Limpiar el texto de entrada
+        text_lower = text.lower().strip()
+        
+        # Paso 1: Intentar patrones tradicionales primero (números ya unidos)
+        traditional_patterns = [
             r'radicado[:\s]*(\d{12})',  # "radicado: 202510293114" o "radicado 202510293114"
             r'radicado[:\s]*(\d{4}\d{8})',  # Variación de 12 dígitos
             r'número[:\s]*(\d{12})',  # "número: 202510293114"
-            r'(\d{12})',  # Simplemente 12 dígitos seguidos
             r'rad[:\s]*(\d{12})',  # "rad: 202510293114"
+            r'(\d{12})',  # Simplemente 12 dígitos seguidos
         ]
         
-        text_lower = text.lower()
-        for pattern in patterns:
+        for pattern in traditional_patterns:
             match = re.search(pattern, text_lower)
             if match:
                 return match.group(1)
         
+        # Paso 2: Procesamiento de números dictados por separado
+        radicado_from_speech = self._extract_radicado_from_speech(text_lower)
+        if radicado_from_speech:
+            return radicado_from_speech
+        
         return None
+    
+    def _extract_radicado_from_speech(self, text: str) -> str:
+        """Extrae radicado de texto dictado con números separados"""
+        import re
+        
+        # Buscar contextos que indiquen que se está dictando un radicado
+        radicado_indicators = [
+            r'radicado[:\s]*(.+?)(?:\.|$|,|!|\?)',
+            r'número[:\s]*(.+?)(?:\.|$|,|!|\?)',
+            r'rad[:\s]*(.+?)(?:\.|$|,|!|\?)',
+        ]
+        
+        for indicator_pattern in radicado_indicators:
+            match = re.search(indicator_pattern, text)
+            if match:
+                potential_radicado_text = match.group(1).strip()
+                radicado = self._parse_spoken_numbers(potential_radicado_text)
+                if radicado and self._is_valid_radicado_format(radicado):
+                    return radicado
+        
+        # Si no hay indicadores específicos, buscar secuencias de números que puedan ser un radicado
+        full_text_radicado = self._parse_spoken_numbers(text)
+        if full_text_radicado and self._is_valid_radicado_format(full_text_radicado):
+            return full_text_radicado
+        
+        return None
+    
+    def _parse_spoken_numbers(self, text: str) -> str:
+        """Convierte números dictados por separado en una secuencia continua"""
+        import re
+        
+        # Limpiar el texto
+        text = text.lower().strip()
+        
+        # Reemplazar palabras numéricas por dígitos
+        number_words = {
+            'cero': '0', 'uno': '1', 'dos': '2', 'tres': '3', 'cuatro': '4',
+            'cinco': '5', 'seis': '6', 'siete': '7', 'ocho': '8', 'nueve': '9',
+            'diez': '10', 'once': '11', 'doce': '12', 'trece': '13', 'catorce': '14',
+            'quince': '15', 'dieciséis': '16', 'diecisiete': '17', 'dieciocho': '18',
+            'diecinueve': '19', 'veinte': '20', 'veintiuno': '21', 'veintidós': '22',
+            'veintitrés': '23', 'veinticuatro': '24', 'veinticinco': '25', 'veintiséis': '26',
+            'veintisiete': '27', 'veintiocho': '28', 'veintinueve': '29', 'treinta': '30'
+        }
+        
+        # Reemplazar palabras por números (asegurar orden correcto de reemplazo)
+        for word, number in sorted(number_words.items(), key=len, reverse=True):
+            text = re.sub(r'\b' + re.escape(word) + r'\b', number, text)
+        
+        # Extraer todos los números del texto (incluyendo números de múltiples dígitos)
+        numbers = re.findall(r'\d+', text)
+        
+        if not numbers:
+            return None
+        
+        # Unir todos los números encontrados
+        combined_number = ''.join(numbers)
+        
+        # Verificar que la longitud sea apropiada para un radicado (12 dígitos)
+        if len(combined_number) == 12:
+            return combined_number
+        
+        # Si tenemos exactamente la cantidad correcta de números separados para formar un radicado
+        # de 12 dígitos, intentar diferentes combinaciones
+        if len(numbers) >= 6:  # Mínimo 6 grupos de números para un radicado típico
+            # Estrategia: año (4) + mes (2) + día (2) + hora (2) + minuto (2) + segundo (2)
+            # o variaciones similares
+            radicado_candidates = []
+            
+            # Opción 1: Combinar todos los números tal como aparecen
+            if len(combined_number) <= 12:
+                # Rellenar con ceros al inicio si es necesario para llegar a 12 dígitos
+                candidate = combined_number.zfill(12)
+                radicado_candidates.append(candidate)
+            
+            # Opción 2: Si hay números de 2 dígitos, intentar diferentes agrupaciones
+            for candidate in radicado_candidates:
+                if self._is_valid_radicado_format(candidate):
+                    return candidate
+        
+        return None
+    
+    def _is_valid_radicado_format(self, radicado: str) -> bool:
+        """Valida si el formato del radicado es válido"""
+        if not radicado or len(radicado) != 12:
+            return False
+        
+        # Verificar que solo contenga dígitos
+        if not radicado.isdigit():
+            return False
+        
+        # Verificar que comience con año 2025 (formato esperado)
+        if not radicado.startswith('2025'):
+            return False
+        
+        # Verificar que el mes esté en rango válido (01-12)
+        month = radicado[4:6]
+        if not (1 <= int(month) <= 12):
+            return False
+        
+        # Verificar que el día esté en rango válido (01-31)
+        day = radicado[6:8]
+        if not (1 <= int(day) <= 31):
+            return False
+        
+        return True
 
     def _process_radicado_query(self, radicado: str, original_text: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Procesa una consulta específica por radicado"""

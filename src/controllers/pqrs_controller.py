@@ -95,25 +95,36 @@ def process_audio():
         logger.info(f"Session ID: {session_id}")
         
         # Procesar PQRS desde audio
-        result = pqrs_orchestrator.process_audio_pqrs(audio_file, session_id)
-        
-        if result["success"]:
-            logger.info("Audio procesado exitosamente")
-            return jsonify({
-                "success": True,
-                "transcript": result["transcription"],
-                "pqrs_data": result["pqrs_data"],
-                "response": result["response"]
-            })
-        else:
-            logger.error(f"Error en procesamiento de audio: {result.get('error', 'Error desconocido')}")
+        try:
+            result = pqrs_orchestrator.process_audio_pqrs(audio_file, session_id)
+            
+            if result["success"]:
+                logger.info("Audio procesado exitosamente")
+                return jsonify({
+                    "success": True,
+                    "transcript": result["transcription"],
+                    "pqrs_data": result["pqrs_data"],
+                    "response": result["response"]
+                })
+            else:
+                logger.error(f"Error en procesamiento de audio: {result.get('error', 'Error desconocido')}")
+                return jsonify({
+                    "success": False,
+                    "error": result.get("error", "Error desconocido en el procesamiento"),
+                    "error_type": result.get("error_type", "processing_error")
+                }), 500
+                
+        except ValueError as ve:
+            # Errores de validación de contenido de audio
+            logger.warning(f"Error de validación en procesamiento de audio: {ve}")
             return jsonify({
                 "success": False,
-                "error": result.get("error", "Error desconocido en el procesamiento")
-            }), 500
+                "error": str(ve),
+                "error_type": "validation_error"
+            }), 400
             
     except Exception as e:
-        logger.error(f"Error en endpoint process_audio: {str(e)}", exc_info=True)
+        logger.exception(f"Error en endpoint process_audio: {str(e)}")
         return jsonify({
             "success": False,
             "error": f"Error interno del servidor al procesar el audio: {str(e)}"
@@ -143,18 +154,38 @@ def transcribe_audio_only():
             }), 400
         
         # Transcribir solo el audio
-        transcription = pqrs_orchestrator.audio_service.transcribe_audio(audio_file)
-        
-        if transcription:
-            return jsonify({
-                "success": True,
-                "transcription": transcription
-            })
-        else:
+        try:
+            transcription = pqrs_orchestrator.audio_service.transcribe_audio(audio_file)
+            
+            if transcription and transcription.transcription:
+                return jsonify({
+                    "success": True,
+                    "transcription": transcription.transcription,
+                    "audio_file": transcription.audio_file
+                })
+            else:
+                return jsonify({
+                    "success": False,
+                    "error": "No se pudo obtener transcripción del audio"
+                }), 400
+                
+        except ValueError as ve:
+            # Errores de validación de contenido
+            logger.warning(f"Error de validación en transcripción: {ve}")
             return jsonify({
                 "success": False,
-                "error": "No se pudo transcribir el audio"
+                "error": str(ve),
+                "error_type": "validation_error"
             }), 400
+            
+        except Exception as te:
+            # Errores técnicos de transcripción
+            logger.error(f"Error técnico en transcripción: {te}")
+            return jsonify({
+                "success": False,
+                "error": "Error técnico en la transcripción. Por favor, verifica que el audio sea claro y audible.",
+                "error_type": "transcription_error"
+            }), 500
             
     except Exception as e:
         logger.error(f"Error en endpoint transcribe_audio: {e}")

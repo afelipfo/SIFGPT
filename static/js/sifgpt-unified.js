@@ -410,9 +410,30 @@ function sendAudioToServer(audioBlob) {
             resetMicButton();
         } else {
             const errorMsg = response.data.error || 'Error desconocido al procesar el audio';
-            console.error('❌ Error del servidor:', errorMsg);
-            addMessageToChat(`Error: ${errorMsg}`, 'bot');
-            showNotification('Error al procesar el audio', 'error');
+            const errorType = response.data.error_type || 'unknown_error';
+            
+            console.error('❌ Error del servidor:', errorMsg, 'Tipo:', errorType);
+            
+            // Personalizar mensaje según el tipo de error
+            let userMessage = '';
+            let notificationMessage = '';
+            
+            switch (errorType) {
+                case 'validation_error':
+                    userMessage = `🎤 ${errorMsg}`;
+                    notificationMessage = 'Problema con el audio grabado';
+                    break;
+                case 'transcription_error':
+                    userMessage = `🎤 ${errorMsg}`;
+                    notificationMessage = 'Error en la transcripción del audio';
+                    break;
+                default:
+                    userMessage = `Error: ${errorMsg}`;
+                    notificationMessage = 'Error al procesar el audio';
+            }
+            
+            addMessageToChat(userMessage, 'bot');
+            showNotification(notificationMessage, 'error');
             
             // Resetear botón del micrófono incluso en caso de error
             resetMicButton();
