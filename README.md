@@ -1,4 +1,4 @@
-# SIF-GPT - Sistema Inteligente de PQRS para la Secretaría de Infraestructura Física
+# SIF-GPT - Sistema Inteligente de PQRS tipo RAG para la Secretaría de Infraestructura Física
 
 **SIF-GPT** es un asistente virtual inteligente desarrollado para la **Secretaría de Infraestructura Física de la Alcaldía de Medellín**. El sistema combina procesamiento de lenguaje natural con inteligencia artificial para optimizar la gestión y consulta de PQRS (Peticiones, Quejas, Reclamos, Sugerencias y Denuncias).
 
